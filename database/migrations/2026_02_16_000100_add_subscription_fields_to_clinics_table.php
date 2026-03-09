@@ -1,0 +1,23 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::table('clinics', function (Blueprint $table) {
+            $table->boolean('is_subscribed')->default(false)->after('is_verified');
+            $table->string('subscription_receipt')->nullable()->after('is_subscribed');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('clinics', function (Blueprint $table) {
+            $table->dropColumn('is_subscribed');
+            $table->dropColumn('subscription_receipt');
+        });
+    }
+};
