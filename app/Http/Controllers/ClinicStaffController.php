@@ -75,9 +75,9 @@ class ClinicStaffController extends Controller
             'address' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'password' => 'nullable|string|min:6|confirmed',
-            'profile_image' => 'nullable|image|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
             'description' => 'nullable|string',
-            'gallery.*' => 'nullable|image|max:2048',
+            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
         ]);
 
         // Get basic fields
@@ -91,18 +91,27 @@ class ClinicStaffController extends Controller
         // Handle profile image upload
 if ($request->hasFile('profile_image')) {
     $file = $request->file('profile_image');
-    $filename = time().'_'.$file->getClientOriginalName();
-    $file->storeAs('clinics', $filename, 'public'); // save in storage
-    $data['profile_image'] = $filename;           // save only filename
+    if ($file->isValid()) {
+        // Delete old image if exists
+        if ($clinic->profile_image) {
+            Storage::disk('public')->delete('clinics/' . $clinic->profile_image);
+        }
+
+        $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
+        $file->move(base_path('storage/clinics'), $filename);
+        $data['profile_image'] = $filename;           // save only filename
+    }
 }
 
 // Handle Gallery Upload
 if ($request->hasFile('gallery')) {
     $gallery = $clinic->gallery ?? [];
     foreach ($request->file('gallery') as $image) {
-        $filename = uniqid() . '_' . $image->getClientOriginalName();
-        $image->storeAs('clinics/gallery', $filename, 'public');
-        $gallery[] = $filename;
+        if ($image->isValid()) {
+            $filename = uniqid() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $image->getClientOriginalName());
+            $image->move(base_path('storage/clinics/gallery'), $filename);
+            $gallery[] = $filename;
+        }
     }
     $data['gallery'] = $gallery;
 }

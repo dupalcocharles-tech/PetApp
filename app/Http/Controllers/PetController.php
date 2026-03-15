@@ -43,8 +43,12 @@ class PetController extends Controller
 
         // Handle pet image upload
         if ($request->hasFile('pet_image')) {
-            $path = $request->file('pet_image')->store('pets', 'public');
-            $data['image'] = $path;
+            $file = $request->file('pet_image');
+            if ($file->isValid()) {
+                $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
+                $file->move(base_path('storage/pets'), $filename);
+                $data['image'] = 'pets/' . $filename;
+            }
         }
 
         Pet::create($data);
@@ -80,13 +84,19 @@ class PetController extends Controller
 
         // Handle pet image upload
         if ($request->hasFile('pet_image')) {
-            // Delete old image if exists
-            if ($pet->image && Storage::disk('public')->exists($pet->image)) {
-                Storage::disk('public')->delete($pet->image);
-            }
+            $file = $request->file('pet_image');
+            if ($file->isValid()) {
+                // Delete old image if exists
+                if ($pet->image) {
+                    Storage::disk('public')->delete($pet->image);
+                }
 
-            $path = $request->file('pet_image')->store('pets', 'public');
-            $data['image'] = $path;
+                // Store new image with a clear, sanitized filename
+                $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
+                $file->move(base_path('storage/pets'), $filename);
+                
+                $data['image'] = 'pets/' . $filename;
+            }
         }
 
         $pet->update($data);

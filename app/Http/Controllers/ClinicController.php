@@ -185,6 +185,19 @@ public function update(Request $request)
     /** @var Clinic $clinic */
     $clinic = auth('clinic')->user();
 
+    // Validate input
+    $request->validate([
+        'clinic_name' => 'required|string|max:255',
+        'email' => 'required|email|unique:clinics,email,' . $clinic->id,
+        'address' => 'required|string|max:255',
+        'phone' => 'required|string|max:20',
+        'password' => 'nullable|string|min:6|confirmed',
+        'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+        'qr_code' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+        'description' => 'nullable|string',
+        'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+    ]);
+
     // Get fields from form
     $data = $request->only([
         'username',
@@ -195,33 +208,37 @@ public function update(Request $request)
     ]);
 
     if ($request->hasFile('profile_image')) {
-    // Delete old image if exists
-    if ($clinic->profile_image && Storage::disk('public')->exists('clinics/' . $clinic->profile_image)) {
-        Storage::disk('public')->delete('clinics/' . $clinic->profile_image);
+        $file = $request->file('profile_image');
+        if ($file->isValid()) {
+            // Delete old image if exists
+            if ($clinic->profile_image) {
+                Storage::disk('public')->delete('clinics/' . $clinic->profile_image);
+            }
+
+            // Store new image with a clear, sanitized filename
+            $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
+            $file->move(base_path('storage/clinics'), $filename);
+
+            // Save **only the filename** in the database
+            $data['profile_image'] = $filename;
+        }
     }
-
-    // Store new image
-    $file = $request->file('profile_image');
-    $filename = time() . '_' . $file->getClientOriginalName();
-    $file->storeAs('clinics', $filename, 'public');
-
-    // Save **only the filename** in the database
-    $data['profile_image'] = $filename;
-}
 
     // ✅ Handle QR Code Upload
     if ($request->hasFile('qr_code')) {
-        // Delete old QR code if exists
-        if ($clinic->qr_code && Storage::disk('public')->exists('clinics/qr_codes/' . $clinic->qr_code)) {
-            Storage::disk('public')->delete('clinics/qr_codes/' . $clinic->qr_code);
-        }
-
-        // Store new QR code
         $file = $request->file('qr_code');
-        $filename = time() . '_qr_' . $file->getClientOriginalName();
-        $file->storeAs('clinics/qr_codes', $filename, 'public');
+        if ($file->isValid()) {
+            // Delete old QR code if exists
+            if ($clinic->qr_code) {
+                Storage::disk('public')->delete('clinics/qr_codes/' . $clinic->qr_code);
+            }
 
-        $data['qr_code'] = $filename;
+            // Store new QR code
+            $filename = time() . '_qr_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
+            $file->move(base_path('storage/clinics/qr_codes'), $filename);
+
+            $data['qr_code'] = $filename;
+        }
     }
 
     // ✅ Update Description (Bio)

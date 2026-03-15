@@ -3,23 +3,35 @@
 @section('content')
 @php
     /**
-     * Dynamically resolve the image path for each animal.
+     * Get the actual image path for each animal.
      */
-    function animalImagePath($animal) {
-        $filename = strtolower(str_replace(' ', '_', $animal));
-        $extensions = ['jpg', 'jpeg', 'png', 'webp'];
-        foreach ($extensions as $ext) {
-            $path = public_path("images/{$filename}.{$ext}");
-            if (file_exists($path)) {
-                return asset("images/{$filename}.{$ext}");
-            }
-        }
-        return asset('images/default.jpg');
+    function animalImagePath($imageFilename) {
+        return asset("images/{$imageFilename}");
     }
 
-    $mammals = ['Dogs','Cats','Rabbits','Cows','Sheep','Goats','Pigs','Horses'];
-    $birds = ['Chickens','Ducks','Turkeys','Geese','Parrots'];
-    $rodents = ['Hamsters','Guinea pigs','Mice','Rats'];
+    $mammals = [
+        ['name' => 'Dogs', 'image' => 'dogs.png'],
+        ['name' => 'Cats', 'image' => 'cats.png'],
+        ['name' => 'Rabbits', 'image' => 'rabbits.png'],
+        ['name' => 'Cows', 'image' => 'cows.png'],
+        ['name' => 'Sheep', 'image' => 'sheep.png'],
+        ['name' => 'Goats', 'image' => 'goats.png'],
+        ['name' => 'Pigs', 'image' => 'pigs.png'],
+        ['name' => 'Horses', 'image' => 'horses.png'],
+    ];
+    $birds = [
+        ['name' => 'Chickens', 'image' => 'chickens.png'],
+        ['name' => 'Ducks', 'image' => 'ducks.png'],
+        ['name' => 'Turkeys', 'image' => 'turkeys.png'],
+        ['name' => 'Geese', 'image' => 'geese.png'],
+        ['name' => 'Parrots', 'image' => 'parrots.png'],
+    ];
+    $rodents = [
+        ['name' => 'Hamsters', 'image' => 'hamsters.png'],
+        ['name' => 'Guinea pigs', 'image' => 'guinea_pigs.png'],
+        ['name' => 'Mice', 'image' => 'mice.png'],
+        ['name' => 'Rats', 'image' => 'rats.png'],
+    ];
 
     $categories = [
         ['id' => 'mammals', 'name' => 'Mammals', 'image' => 'images/paw1.webp', 'animals' => $mammals],
@@ -108,16 +120,6 @@
                     </a>
                 </li>
 
-                {{-- Notifications --}}
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3 py-2 rounded-3 text-white text-opacity-75 hover-bg-white-10" 
-                       href="#" data-bs-toggle="modal" data-bs-target="#recentAppointmentsModal" 
-                       title="Notifications">
-                        <i class="bi bi-bell-fill me-3 fs-5"></i>
-                        <span class="fw-medium">Notifications</span>
-                    </a>
-                </li>
-
                 {{-- Theme Toggler --}}
                 <li class="nav-item mt-2 theme-section">
                     <div class="d-flex align-items-center px-3 py-2 text-white text-opacity-75 theme-label-container">
@@ -151,19 +153,6 @@
 
         {{-- Main Content --}}
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" id="mainContent" tabindex="-1">
-            {{-- Mobile Header --}}
-            <div class="d-flex d-md-none align-items-center justify-content-between p-3 mb-3 border-bottom bg-white sticky-top shadow-sm mobile-header-bar">
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-light rounded-circle shadow-sm me-3 border" id="sidebarToggle" style="width: 40px; height: 40px;">
-                        <i class="bi bi-list fs-5"></i>
-                    </button>
-                    <span class="fw-bold fs-5 text-dark tracking-tight mobile-app-title">PetApp</span>
-                </div>
-                <img src="{{ Auth::user()->profile_image ? asset('storage/'.Auth::user()->profile_image) : asset('images/owner.png') }}" 
-                     class="rounded-circle border shadow-sm object-fit-cover" 
-                     style="width: 35px; height: 35px;" alt="User">
-            </div>
-
             {{-- Welcome Container --}}
             {{-- Desktop Header & Hero --}}
             <div class="py-4">
@@ -194,24 +183,25 @@
                                 
                                 {{-- Unified Search Bar --}}
                                 <div class="bg-white p-2 rounded-pill shadow-sm d-flex align-items-center border search-bar-container" style="max-width: 600px;">
-                                    <button class="btn btn-light rounded-pill px-3 py-2 fw-medium d-flex align-items-center border-0 bg-transparent" type="button" data-bs-toggle="modal" data-bs-target="#locationModal">
-                                        <i class="bi bi-geo-alt-fill text-danger me-2"></i>
-                                        <span class="text-truncate" style="max-width: 100px;">{{ $selectedLocation ?: 'Location' }}</span>
-                                        <i class="bi bi-chevron-down ms-2 small text-muted"></i>
-                                    </button>
+                                    <div>
+                                        <button class="btn btn-light rounded-pill px-3 py-2 fw-medium d-flex align-items-center border-0 bg-transparent" type="button" data-bs-toggle="modal" data-bs-target="#locationModal">
+                                            <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                                            <span class="text-truncate" style="max-width: 100px;">{{ $selectedLocation ?: 'Location' }}</span>
+                                            <i class="bi bi-chevron-down ms-2 small text-muted"></i>
+                                        </button>
+                                    </div>
                                     <input type="hidden" name="location" value="{{ $selectedLocation }}">
                                     <div class="vr mx-2 opacity-25"></div>
                                     <input type="text" class="form-control border-0 shadow-none bg-transparent" 
                                            placeholder="Search for clinics or services..." 
                                            readonly onclick="openSearchModal()" style="cursor: pointer;">
-                                    <img src="{{ asset('images/searchicon.gif') }}" 
-                                         class="search-button-img p-1" 
-                                         onclick="openSearchModal()" 
-                                         alt="Search"
-                                         style="width: 40px; height: 40px; cursor: pointer; object-fit: contain;">
+                                    <button class="btn btn-success rounded-circle p-2 shadow-sm d-flex align-items-center justify-content-center" 
+                                            onclick="openSearchModal()" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-search text-white"></i>
+                                    </button>
                                 </div>
                             </div>
-                            <div class="col-lg-5 d-none d-lg-block text-end position-relative" style="height: 210px;">
+                            <div class="col-lg-5 d-none d-lg-block text-end position-relative" style="height: 260px;">
                                 <div class="welcome-slideshow ms-auto">
                                     <img src="{{ asset('images/offlogo.png') }}" class="slide-item logo-slide" alt="PetApp Logo">
                                     <img src="{{ asset('images/doggo1 (2).gif') }}" class="slide-item doggo-slide" alt="Dog">
@@ -252,34 +242,17 @@
                             </div>
                             <h6 class="fw-bold text-dark mb-1">Appointments</h6>
                             @php
-                                $statusLabel = 'No Appointments';
-                                $badgeClass = 'bg-secondary';
-
-                                if (isset($recentAppointments) && $recentAppointments->count() > 0) {
-                                    $statusCounts = $recentAppointments->groupBy('status')->map->count();
-
-                                    $pendingTotal = ($statusCounts['pending'] ?? 0) + ($statusCounts['requested'] ?? 0);
-
-                                    if ($pendingTotal > 0) {
-                                        $statusLabel = $pendingTotal . ' Pending';
-                                        $badgeClass = 'bg-warning';
-                                    } elseif (!empty($statusCounts['approved'] ?? 0)) {
-                                        $statusLabel = $statusCounts['approved'] . ' Approved';
-                                        $badgeClass = 'bg-success';
-                                    } elseif (!empty($statusCounts['completed'] ?? 0)) {
-                                        $statusLabel = $statusCounts['completed'] . ' Completed';
-                                        $badgeClass = 'bg-success';
-                                    } elseif (!empty($statusCounts['cancelled'] ?? 0)) {
-                                        $statusLabel = $statusCounts['cancelled'] . ' Cancelled';
-                                        $badgeClass = 'bg-danger';
-                                    } else {
-                                        $total = $recentAppointments->count();
-                                        $statusLabel = $total . ' Booked';
-                                        $badgeClass = 'bg-primary';
-                                    }
-                                }
+                                $appointmentsTotal = isset($recentAppointments) ? $recentAppointments->count() : 0;
+                                $appointmentsPending = isset($recentAppointments)
+                                    ? $recentAppointments->filter(fn ($a) => ($a->status ?? '') !== 'completed')->count()
+                                    : 0;
+                                $appointmentsCompleted = max(0, $appointmentsTotal - $appointmentsPending);
+                                $appointmentsBadgeText = $appointmentsPending > 0
+                                    ? $appointmentsPending . ' Pending'
+                                    : $appointmentsCompleted . ' Completed';
+                                $appointmentsBadgeClass = $appointmentsPending > 0 ? 'bg-primary' : 'bg-success';
                             @endphp
-                            <span class="badge {{ $badgeClass }} rounded-pill px-3">{{ $statusLabel }}</span>
+                            <span class="badge {{ $appointmentsBadgeClass }} rounded-pill px-3">{{ $appointmentsBadgeText }}</span>
                         </div>
                     </div>
                 </div>
@@ -365,7 +338,7 @@
         transition: opacity 1s ease-in-out;
     }
     .category-btn .slide-img.active {
-        opacity: 0.3;
+        opacity: 1;
     }
     .category-btn .btn-overlay {
         position: absolute;
@@ -407,235 +380,130 @@
         background: #fff;
         transition: background-color 0.3s, border-color 0.3s;
     }
-    /* =========================================
-       MODERN MODAL DESIGN & DARK THEME SYSTEM
-       ========================================= */
-    
-    /* 1. Enhanced Base Design (Light Mode Default) */
-    .modal-content {
-        border: none;
-        border-radius: 1.5rem; /* Modern rounded corners */
-        box-shadow: 0 20px 50px rgba(0,0,0,0.2); /* Deep, soft shadow */
-        overflow: hidden; /* Clip content to corners */
-        background-color: rgba(255, 255, 255, 0.98); /* Slight transparency */
-    }
-
-    /* Glassmorphism Effect for Modals */
-    @supports (backdrop-filter: blur(10px)) {
-        .modal-content {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            background-color: rgba(255, 255, 255, 0.9);
-        }
-    }
-
-    .modal-header {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        align-items: center;
-    }
-
-    .modal-footer {
-        padding: 1.25rem 1.5rem;
-        border-top: 1px solid rgba(0,0,0,0.05);
-        background-color: rgba(0,0,0,0.02); /* Very subtle contrast */
-    }
-
-    /* Smooth Pop Animation */
-    .modal.fade .modal-dialog {
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        transform: scale(0.92) translateY(20px);
-    }
-    .modal.show .modal-dialog {
-        transform: scale(1) translateY(0);
-    }
-
-    /* 2. Global Dark Theme for Modals */
-    body.dark-theme .modal-content {
-        background-color: #1e1e1e; /* Fallback */
+    /* Dark Theme for Clinics Modal & Booking Modal */
+    body.dark-theme #clinicsModal .modal-content,
+    body.dark-theme #bookModal .modal-content {
+        background-color: #1e1e1e;
         color: #fff;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
-    
-    @supports (backdrop-filter: blur(10px)) {
-        body.dark-theme .modal-content {
-            background-color: rgba(30, 30, 30, 0.9);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
+    body.dark-theme #clinicsModal .modal-header,
+    body.dark-theme #bookModal .modal-header {
+        background-color: #198754 !important;
+        border-bottom-color: #333;
     }
-
-    /* Header Backgrounds & Borders in Dark Mode */
-    body.dark-theme .modal-header {
-        border-bottom-color: rgba(255,255,255,0.05);
-        background-color: rgba(255,255,255,0.02);
-    }
-    /* Preserve specific header colors with increased opacity for legibility */
-    body.dark-theme .modal-header.bg-success { background-color: #198754 !important; }
-    body.dark-theme .modal-header.bg-primary { background-color: #0d6efd !important; }
-    body.dark-theme .modal-header.bg-danger  { background-color: #dc3545 !important; }
-    body.dark-theme .modal-header.bg-info    { background-color: #0dcaf0 !important; }
-    body.dark-theme .modal-header.bg-warning { background-color: #ffc107 !important; }
-    body.dark-theme .modal-header.bg-white   { background-color: transparent !important; }
-
-    /* Close Button Inversion */
-    body.dark-theme .btn-close {
-        filter: invert(1) grayscale(100%) brightness(200%);
-        opacity: 0.8;
-    }
-    body.dark-theme .btn-close:hover { opacity: 1; }
-
-    /* Modal Body & Footer */
-    body.dark-theme .modal-body {
-        color: #e0e0e0;
-    }
-    body.dark-theme .modal-footer {
-        border-top-color: rgba(255,255,255,0.05);
-        background-color: rgba(0,0,0,0.2);
-    }
-
-    /* Text Colors & Typography */
-    body.dark-theme .modal-title,
-    body.dark-theme .modal-body h1, body.dark-theme .modal-body h2, 
-    body.dark-theme .modal-body h3, body.dark-theme .modal-body h4, 
-    body.dark-theme .modal-body h5, body.dark-theme .modal-body h6,
-    body.dark-theme .modal-content .text-dark {
+    body.dark-theme #clinicsModal .modal-title,
+    body.dark-theme #bookModal .modal-title {
         color: #fff !important;
     }
-    body.dark-theme .modal-content .text-danger { color: #ff8b94 !important; }
-    body.dark-theme .modal-content .text-primary { color: #6ea8fe !important; }
-    body.dark-theme .modal-content .text-success { color: #75b798 !important; }
-    body.dark-theme .modal-content .text-muted { color: #adb5bd !important; }
-
-    /* Form Elements Modernization */
-    body.dark-theme .modal-content .form-control,
-    body.dark-theme .modal-content .form-select {
-        background-color: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: #fff;
-        border-radius: 0.8rem;
+    body.dark-theme #clinicsModal .btn-close,
+    body.dark-theme #bookModal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
     }
-    body.dark-theme .modal-content .form-control:focus,
-    body.dark-theme .modal-content .form-select:focus {
-        background-color: rgba(255,255,255,0.1);
-        border-color: #198754;
-        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
-    }
-    
-    /* Input Groups */
-    body.dark-theme .modal-content .input-group-text {
-        background-color: rgba(255,255,255,0.1);
-        border-color: rgba(255,255,255,0.1);
+    body.dark-theme #clinicsModal .modal-body,
+    body.dark-theme #bookModal .modal-body {
         color: #e0e0e0;
     }
-
-    /* Cards inside Modals */
-    body.dark-theme .modal-content .card {
-        background-color: rgba(255,255,255,0.05);
+    body.dark-theme #clinicsModal .card {
+        background-color: #2a2a2a;
         color: #e0e0e0;
-        border: 1px solid rgba(255,255,255,0.05);
+        border-color: #444;
+    }
+    body.dark-theme #clinicsModal .text-dark,
+    body.dark-theme #bookModal .text-dark {
+        color: #fff !important;
     }
     
-    /* Service Items */
+    /* Invert GIF on dark mode (preserves colors, flips black/white) */
+    body.dark-theme .invert-on-dark {
+        filter: invert(1) hue-rotate(180deg);
+    }
+    body.dark-theme #clinicsModal .text-muted,
+    body.dark-theme #bookModal .text-muted {
+        color: #adb5bd !important;
+    }
+    
+    /* Specific Dark Mode Overrides for Elements inside Modals */
+    body.dark-theme #clinicsModal .bg-light,
+    body.dark-theme #bookModal .bg-light {
+        background-color: #333 !important;
+        color: #e0e0e0 !important;
+        border-color: #444 !important;
+    }
+    
+    /* Service Item Dark Mode */
     body.dark-theme .service-item {
-        border-color: rgba(255,255,255,0.1);
+        border-color: #444;
         background-color: transparent;
         color: #e0e0e0;
     }
     body.dark-theme .service-item:hover {
-        background-color: rgba(255,255,255,0.05);
+        background-color: #333;
+        border-color: #555;
     }
     body.dark-theme .service-item.active {
-        background-color: rgba(25, 135, 84, 0.2);
+        background-color: rgba(25, 135, 84, 0.2); /* Translucent Green */
         border-color: #198754 !important;
     }
     
-    /* Background Utilities in Modals */
-    body.dark-theme .modal-content .bg-light,
-    body.dark-theme .modal-content .bg-light-subtle {
-        background-color: rgba(255,255,255,0.05) !important;
-        color: #e0e0e0 !important;
-        border-color: rgba(255,255,255,0.1) !important;
+    /* Form Inputs in Dark Mode (for Booking Modal) */
+    body.dark-theme #bookModal .form-control,
+    body.dark-theme #bookModal .form-select {
+        background-color: #2a2a2a;
+        border-color: #444;
+        color: #fff;
     }
-
-    /* Restored Utilities */
-    body.dark-theme .invert-on-dark {
-        filter: invert(1) hue-rotate(180deg);
-    }
-    body.dark-theme .modal-content .form-label {
+    body.dark-theme #bookModal .form-label {
         color: #e0e0e0;
     }
 
-    /* 3. Component Refinements */
-    .modal-footer .btn {
-        border-radius: 50rem; /* Pill shape */
-        padding: 0.6rem 1.5rem;
-        font-weight: 600;
-        letter-spacing: 0.3px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        transition: all 0.2s ease;
+    /* Dark Theme for Vet Notes Modal */
+    body.dark-theme #vetNotesModal .modal-content {
+        background-color: #1e1e1e;
+        color: #fff;
     }
-    .modal-footer .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    body.dark-theme #vetNotesModal .modal-header {
+        background-color: #198754 !important;
+        border-bottom-color: #333;
     }
-    
-    /* Stylish Close Button */
-    .modal-header .btn-close {
-        background-color: rgba(0,0,0,0.05);
-        border-radius: 50%;
-        padding: 0.5rem;
-        background-size: 0.8rem;
-        transition: transform 0.2s, background-color 0.2s;
-        opacity: 0.7;
+    body.dark-theme #vetNotesModal .modal-title {
+        color: #fff !important;
     }
-    .modal-header .btn-close:hover {
-        background-color: rgba(220, 53, 69, 0.1);
-        transform: rotate(90deg);
-        opacity: 1;
+    body.dark-theme #vetNotesModal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
     }
-    body.dark-theme .modal-header .btn-close {
-        background-color: rgba(255,255,255,0.1);
+    body.dark-theme #vetNotesModal .card {
+        background-color: #2a2a2a !important;
+        color: #e0e0e0;
+        border-color: #444;
     }
-    
-    /* Better Scrollbars */
-    .modal-body::-webkit-scrollbar {
-        width: 6px;
+    body.dark-theme #vetNotesModal .text-dark {
+        color: #fff !important;
     }
-    .modal-body::-webkit-scrollbar-track {
-        background: transparent;
+    body.dark-theme #vetNotesModal .text-muted {
+        color: #adb5bd !important;
     }
-    .modal-body::-webkit-scrollbar-thumb {
-        background-color: rgba(0,0,0,0.1);
-        border-radius: 10px;
-    }
-    body.dark-theme .modal-body::-webkit-scrollbar-thumb {
-        background-color: rgba(255,255,255,0.2);
-    }
-
-    /* Force Glass Effect on Headers */
-    .modal-header.bg-white {
-        background-color: transparent !important; 
-    }
-    
-    /* Input Fields Polish */
-    .modal-content .form-control:focus, 
-    .modal-content .form-select:focus {
-        box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.15); 
-        border-color: #198754;
-    }
-
-    /* 4. Location Modal Dark Mode Support */
-    body.dark-theme #locationModal .btn-light {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
+    body.dark-theme #vetNotesModal .bg-light,
+    body.dark-theme #vetNotesModal .bg-light-subtle {
+        background-color: #333 !important;
         color: #e0e0e0 !important;
+        border-color: #444 !important;
     }
-    body.dark-theme #locationModal .btn-light:hover {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        transform: translateY(-2px);
+    body.dark-theme #vetNotesModal .border {
+        border-color: #444 !important;
     }
-    body.dark-theme #locationModal .border-top {
-        border-color: rgba(255, 255, 255, 0.1) !important;
+    body.dark-theme #vetNotesModal .card {
+        background-color: #2a2a2a;
+        color: #e0e0e0;
+        border-color: #444;
+    }
+    body.dark-theme #vetNotesModal .text-dark {
+        color: #fff !important;
+    }
+    body.dark-theme #vetNotesModal .text-muted {
+        color: #adb5bd !important;
+    }
+    body.dark-theme #vetNotesModal .bg-light {
+        background-color: #333 !important;
     }
 
     /* =========================================
@@ -796,9 +664,6 @@
     body.dark-theme .search-bar-container .dropdown-item:hover {
         background-color: #333;
     }
-    body.dark-theme .search-button-img {
-        filter: invert(1);
-    }
     
     /* Quick Stats Cards */
     .hover-lift {
@@ -839,7 +704,7 @@
                 <div class="slide-slot"></div>
                 <div class="d-none slide-source-data">
                     @foreach($cat['animals'] as $animal)
-                        <span data-src="{{ animalImagePath($animal) }}"></span>
+                        <span data-src="{{ animalImagePath($animal['image']) }}"></span>
                     @endforeach
                 </div>
             </div>
@@ -861,9 +726,9 @@
                 <div class="row g-3">
                     @foreach($cat['animals'] as $animal)
                     <div class="col-4 col-md-3 col-lg-2 fade-in-item">
-                        <button class="btn animal-btn w-100 shadow-sm" data-animal="{{ $animal }}">
-                            <img src="{{ animalImagePath($animal) }}" alt="{{ $animal }}">
-                            <div class="overlay">{{ $animal }}</div>
+                        <button class="btn animal-btn w-100 shadow-sm" data-animal="{{ $animal['name'] }}">
+                            <img src="{{ animalImagePath($animal['image']) }}" alt="{{ $animal['name'] }}">
+                            <div class="overlay">{{ $animal['name'] }}</div>
                         </button>
                     </div>
                     @endforeach
@@ -883,9 +748,9 @@
             <div class="row g-3">
                 @foreach($cat['animals'] as $animal)
                 <div class="col-4 col-md-3 col-lg-2 fade-in-item">
-                    <button class="btn animal-btn w-100 shadow-sm" data-animal="{{ $animal }}">
-                        <img src="{{ animalImagePath($animal) }}" alt="{{ $animal }}">
-                        <div class="overlay">{{ $animal }}</div>
+                    <button class="btn animal-btn w-100 shadow-sm" data-animal="{{ $animal['name'] }}">
+                        <img src="{{ animalImagePath($animal['image']) }}" alt="{{ $animal['name'] }}">
+                        <div class="overlay">{{ $animal['name'] }}</div>
                     </button>
                 </div>
                 @endforeach
@@ -931,49 +796,38 @@
 <div class="modal fade" id="myPetsModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-      <div class="modal-header bg-white border-0 pb-0">
-        <h5 class="modal-title fw-bold text-dark"><i class="bi bi-paw-fill me-2 text-success"></i>My Pets</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-success text-white border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-paw-fill me-2"></i>My Pets</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4 bg-light-subtle">
        @if(isset($pets) && $pets->count() > 0)
-        <div class="row row-cols-1 row-cols-sm-2 g-3">
+        <div class="d-flex flex-column gap-3">
             @foreach($pets as $pet)
-                <div class="col">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 my-pet-card hover-lift transition-all">
-                        <div class="card-body p-3 text-center">
-                            <!-- Circular Image -->
-                            <div class="position-relative d-inline-block mb-3">
-                                <img src="{{ $pet->image ? $pet->image_url : asset('images/default_pet.jpg') }}" 
-                                     class="rounded-circle border border-3 border-success border-opacity-25 object-fit-cover shadow-sm" 
-                                     alt="{{ $pet->name }}" 
-                                     style="height: 100px; width: 100px;">
-                                <div class="position-absolute bottom-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px; border: 2px solid white;">
-                                    <i class="bi bi-heart-fill" style="font-size: 0.8rem;"></i>
-                                </div>
-                            </div>
-                            
-                            <!-- Pet Details -->
-                            <h5 class="fw-bold mb-1 pet-name text-dark">{{ $pet->name ?? 'Unnamed' }}</h5>
-                            <div class="d-flex justify-content-center gap-2 mb-3">
-                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">
-                                    {{ $pet->age ?? 'N/A' }} yrs
-                                </span>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1 small text-truncate" style="max-width: 100px;">
-                                    {{ $pet->breed ?? 'Unknown' }}
-                                </span>
-                            </div>
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-1 my-pet-card">
+                    <div class="card-body p-0 d-flex flex-wrap flex-sm-nowrap align-items-center">
+                        <!-- Image Left -->
+                        <img src="{{ $pet->image ? $pet->image_url : asset('images/default_pet.jpg') }}" 
+                             class="object-fit-cover d-none d-sm-block" 
+                             alt="{{ $pet->name }}" 
+                             style="height: 100px; width: 100px;">
+                        
+                        <!-- Details Middle -->
+                        <div class="ms-3 flex-grow-1 p-3">
+                            <h5 class="fw-bold mb-1 pet-name">{{ $pet->name ?? 'Unnamed' }}</h5>
+                            <p class="text-muted small mb-0">{{ $pet->age ?? 'N/A' }} years old</p>
+                            <p class="text-muted small mb-0">{{ $pet->breed ?? 'Unknown Breed' }}</p>
+                        </div>
 
-                            <!-- Actions -->
-                            <div class="d-flex justify-content-center gap-2 pt-2 border-top">
-                                <a href="{{ route('pets.edit', $pet->id) }}" class="btn btn-sm btn-light rounded-pill px-3 fw-bold text-success hover-bg-success-subtle transition-all">
-                                    <i class="bi bi-pencil-square me-1"></i>Edit
-                                </a>
-                                <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold text-danger hover-bg-danger-subtle transition-all delete-pet-btn" 
-                                        data-pet-id="{{ $pet->id }}">
-                                    <i class="bi bi-trash me-1"></i>Delete
-                                </button>
-                            </div>
+                        <!-- Edit Button Right (Big Icon) -->
+                        <div class="pe-3 pe-md-4 flex-shrink-0 d-flex align-items-center">
+                             <a href="{{ route('pets.edit', $pet->id) }}" class="text-success p-2 text-decoration-none" title="Edit Pet">
+                                <i class="bi bi-pencil-square" style="font-size: 2rem;"></i>
+                            </a>
+                            <button type="button" class="btn p-2 text-danger border-0 bg-transparent delete-pet-btn" 
+                                    data-pet-id="{{ $pet->id }}" title="Delete Pet">
+                                <i class="bi bi-trash" style="font-size: 2rem;"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -992,8 +846,8 @@
             </div>
         @endif
       </div>
-      <div class="modal-footer border-0 bg-light-subtle pb-4 justify-content-center">
-        <button type="button" class="btn btn-secondary rounded-pill px-5 fw-bold shadow-sm" data-bs-dismiss="modal">Close</button>
+      <div class="modal-footer border-0 bg-light-subtle">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -1066,7 +920,6 @@
     /* Dark Theme for My Pets Modal List */
     body.dark-theme .my-pet-card {
         background-color: #2a2a2a;
-        border: 1px solid rgba(255,255,255,0.05) !important;
     }
     body.dark-theme .my-pet-card .pet-name {
         color: #fff !important;
@@ -1074,33 +927,25 @@
     body.dark-theme .my-pet-card .text-muted {
         color: #adb5bd !important;
     }
-    body.dark-theme .my-pet-card .btn-light {
-        background-color: rgba(255,255,255,0.05);
-        color: #e0e0e0 !important;
-        border: none;
-    }
-    body.dark-theme .my-pet-card .btn-light:hover {
-        background-color: rgba(255,255,255,0.1);
-    }
-    
-    .my-pet-card {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .my-pet-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
-    }
-    .hover-bg-success-subtle:hover {
-        background-color: rgba(25, 135, 84, 0.1) !important;
-    }
-    .hover-bg-danger-subtle:hover {
-        background-color: rgba(220, 53, 69, 0.1) !important;
-    }
     body.dark-theme .bg-light-subtle {
         background-color: #1e1e1e !important;
     }
 
-    /* Recent Appointments Modal styles removed */
+    /* Dark Theme for Recent Appointments Modal */
+    body.dark-theme #recentAppointmentsModal .modal-content {
+        background-color: #1e1e1e;
+        color: #fff;
+    }
+    body.dark-theme #recentAppointmentsModal .modal-header {
+        background-color: #1e1e1e !important;
+        border-bottom-color: #333;
+    }
+    body.dark-theme #recentAppointmentsModal .modal-title {
+        color: #fff !important;
+    }
+    body.dark-theme #recentAppointmentsModal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
     
     /* Appointment Cards in Dark Mode */
     body.dark-theme .appointment-card {
@@ -1138,9 +983,55 @@
         color: #6ea8fe !important;
     }
 
-    /* Recent Appointments Body styles removed */
+    /* Dark Theme for Recent Appointments Modal Body & Text */
+    body.dark-theme #recentAppointmentsModal .bg-light-subtle {
+        background-color: #1e1e1e !important;
+        color: #e0e0e0;
+    }
+    body.dark-theme #recentAppointmentsModal .text-muted {
+        color: #adb5bd !important;
+    }
+    body.dark-theme #recentAppointmentsModal .text-dark {
+        color: #fff !important;
+    }
 
-    /* Appointment Details Modal styles removed */
+    /* Dark Theme for Appointment Details Modal */
+    body.dark-theme #appointmentDetailsModal .modal-content {
+        background-color: #1e1e1e;
+        color: #fff;
+    }
+    body.dark-theme #appointmentDetailsModal .modal-header {
+        background-color: #198754 !important;
+        border-bottom-color: #333;
+    }
+    body.dark-theme #appointmentDetailsModal .modal-title {
+        color: #fff !important;
+    }
+    body.dark-theme #appointmentDetailsModal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+    body.dark-theme #appointmentDetailsModal .bg-light-subtle {
+        background-color: #1e1e1e !important;
+        color: #e0e0e0;
+    }
+    body.dark-theme #appointmentDetailsModal .text-dark {
+        color: #fff !important;
+    }
+    body.dark-theme #appointmentDetailsModal .text-muted {
+        color: #adb5bd !important;
+    }
+    body.dark-theme #appointmentDetailsModal .card {
+        background-color: #2a2a2a;
+        color: #e0e0e0;
+        border-color: #444;
+    }
+    
+    /* Dark Theme for Pet Items in Appointment Details */
+    body.dark-theme #appointmentDetailsModal .bg-light {
+        background-color: #383838 !important;
+        border-color: #444 !important;
+        color: #e0e0e0 !important;
+    }
 
     /* Dark Theme for Stacked Pet Images in List View */
     body.dark-theme .appointment-card img.border-white {
@@ -1172,10 +1063,27 @@
         border-color: #0d6efd !important;
     }
     
-    /* Dark Theme for Logout Modal - Specific Override */
+    /* Dark Theme for Logout Modal */
+    body.dark-theme #logoutModal .modal-content {
+        background-color: #1e1e1e;
+        color: #fff;
+    }
+    body.dark-theme #logoutModal .bg-light-subtle {
+        background-color: #1e1e1e !important;
+        color: #e0e0e0;
+    }
+    body.dark-theme #logoutModal .text-dark {
+        color: #fff !important;
+    }
+    body.dark-theme #logoutModal .text-muted {
+        color: #adb5bd !important;
+    }
     body.dark-theme #logoutModal .bg-danger-subtle {
         background-color: rgba(220, 53, 69, 0.2) !important;
         color: #ea868f !important;
+    }
+    body.dark-theme #logoutModal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
     }
 
     /* Mobile Bottom Nav Dark Mode - Invert Black to White, preserve other colors */
@@ -1202,32 +1110,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4 bg-light-subtle">
-        @if(isset($reportNotifications) && $reportNotifications->count() > 0)
-            <div class="mb-4">
-                <h6 class="fw-bold text-dark mb-2">
-                    <i class="bi bi-bell-fill me-1 text-warning"></i>
-                    Report Updates
-                </h6>
-                <div class="list-group small">
-                    @foreach($reportNotifications as $note)
-                        <div class="list-group-item border-0 px-0 d-flex justify-content-between align-items-start bg-transparent">
-                            <div>
-                                <div class="fw-semibold text-dark">
-                                    {{ $note['clinic_name'] }}
-                                </div>
-                                <div class="text-muted">
-                                    {{ $note['message'] }}
-                                </div>
-                            </div>
-                            <span class="text-muted ms-3" style="font-size: 0.75rem;">
-                                {{ $note['created_at']->diffForHumans() }}
-                            </span>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
         @if(isset($recentAppointments) && $recentAppointments->count() > 0)
             <div class="d-flex flex-column gap-3">
                 @foreach($recentAppointments as $appointment)
@@ -1263,9 +1145,6 @@
                             pets: {{ json_encode($apptPets) }},
                             payment_status: '{{ $appointment->payment_status }}',
                             payment_method: '{{ $appointment->payment_method }}',
-                            qr_code: '{{ $appointment->clinic?->qr_code ? asset('storage/clinics/qr_codes/' . $appointment->clinic->qr_code) : '' }}',
-                            payment_receipt: '{{ $appointment->payment_receipt ? asset('storage/payment_receipts/' . $appointment->payment_receipt) : '' }}',
-                            uploadReceiptUrl: '{{ route('payment.uploadReceipt', $appointment->id) }}',
                             checkoutUrl: '{{ route('payment.checkout', $appointment->id) }}'
                          })">
                         <div class="card-body p-3">
@@ -1312,58 +1191,32 @@
                                         {{ ucfirst($appointment->status ?? 'N/A') }}
                                     </span>
 
-                                    @if(in_array($appointment->status, ['pending', 'requested']))
-                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" 
-                                                onclick="event.stopPropagation(); showCancelModal('{{ $appointment->id }}')"
-                                                title="Cancel Appointment">
-                                            <i class="bi bi-x-circle"></i> Cancel
-                                        </button>
-                                    @endif
-
                                     @if($appointment->payment_status === 'unpaid' && ($appointment->status == 'approved' || $appointment->payment_method == 'online'))
-                                        @if($appointment->payment_method == 'online')
-                                            <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold px-3">
-                                                Pay / Upload Receipt
-                                            </button>
-                                        @else
-                                            <a href="{{ route('payment.checkout', $appointment->id) }}" class="btn btn-sm btn-success rounded-pill fw-bold px-3" onclick="event.stopPropagation()">
-                                                Pay Downpayment
-                                            </a>
-                                        @endif
+                                        <a href="{{ route('payment.checkout', $appointment->id) }}" class="btn btn-sm btn-success rounded-pill fw-bold px-3" onclick="event.stopPropagation()">
+                                            Pay Downpayment
+                                        </a>
                                     @elseif($appointment->payment_status === 'downpayment_paid')
                                         <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
                                             <i class="bi bi-shield-fill-check me-1"></i> Verified
                                         </span>
                                     @endif
 
-                                    <div class="d-flex align-items-center gap-2">
-                                        @if($appointment->status === 'completed' && !$appointment->review)
-                                            <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3"
-                                                    onclick="event.stopPropagation()"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#reviewModal"
-                                                    data-appointment="{{ $appointment->id }}"
-                                                    data-clinic="{{ $appointment->clinic_id }}">
-                                                Review
-                                            </button>
-                                        @elseif($appointment->review)
-                                            <div class="text-warning small me-2" title="Rated {{ $appointment->review->rating }} stars">
-                                                @for($i = 0; $i < 5; $i++)
-                                                    <i class="bi bi-star{{ $i < $appointment->review->rating ? '-fill' : '' }}"></i>
-                                                @endfor
-                                            </div>
-                                        @endif
-
-                                        @if($appointment->status === 'completed')
-                                            <button class="btn btn-sm btn-outline-danger rounded-pill fw-bold px-3"
-                                                    onclick="event.stopPropagation()"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#reportClinicModal"
-                                                    data-appointment="{{ $appointment->id }}">
-                                                Report
-                                            </button>
-                                        @endif
-                                    </div>
+                                    @if($appointment->status === 'completed' && !$appointment->review)
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3"
+                                                onclick="event.stopPropagation()"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#reviewModal"
+                                                data-appointment="{{ $appointment->id }}"
+                                                data-clinic="{{ $appointment->clinic_id }}">
+                                            Review
+                                        </button>
+                                    @elseif($appointment->review)
+                                        <div class="text-warning small" title="Rated {{ $appointment->review->rating }} stars">
+                                            @for($i = 0; $i < 5; $i++)
+                                                <i class="bi bi-star{{ $i < $appointment->review->rating ? '-fill' : '' }}"></i>
+                                            @endfor
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -1423,7 +1276,7 @@
                     <span class="text-muted">Total Price</span>
                     <span class="fw-bold text-dark" id="apptDetailsPrice">₱0.00</span>
                 </div>
-                                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted">Downpayment (50%)</span>
                     <span class="fw-bold text-success fs-5" id="apptDetailsDownpayment">₱0.00</span>
                 </div>
@@ -1431,38 +1284,6 @@
                 <div class="mt-3 pt-3 border-top" id="apptDetailsPetsContainer" style="display: none;">
                     <span class="text-muted small fw-bold text-uppercase mb-2 d-block">Pets</span>
                     <div id="apptDetailsPets" class="d-flex flex-wrap gap-2"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="apptDetailsQrContainer" class="text-center mb-3 mt-3 d-none p-3 border rounded bg-white shadow-sm">
-            <p class="small text-muted fw-bold text-uppercase mb-2">Scan to Pay (GCash/Maya)</p>
-            <img id="apptDetailsQrImage" src="" class="img-fluid rounded" style="max-height: 200px; object-fit: contain;">
-            <div class="small text-muted mt-2">After scanning, please upload your receipt below for verification.</div>
-        </div>
-
-        <div id="apptDetailsReceiptContainer" class="mb-3 d-none">
-            <div class="card border-0 bg-light p-3">
-                <h6 class="fw-bold text-dark small text-uppercase mb-2">Upload Payment Receipt</h6>
-                
-                {{-- Form for uploading receipt --}}
-                <form id="uploadReceiptForm" action="" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="input-group mb-2">
-                        <input type="file" class="form-control" name="receipt" accept="image/*" required>
-                        <button class="btn btn-primary" type="submit">Upload</button>
-                    </div>
-                    <div class="form-text small">Please upload a screenshot of your payment confirmation.</div>
-                </form>
-
-                {{-- Status if already uploaded --}}
-                <div id="receiptPreview" class="mt-2 d-none">
-                     <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <div class="small fw-bold">Receipt Uploaded</div>
-                        <a href="#" target="_blank" id="receiptLink" class="btn btn-sm btn-outline-success ms-auto py-0">View</a>
-                     </div>
-                     <div class="text-muted small mt-1 text-center fst-italic">Waiting for clinic verification...</div>
                 </div>
             </div>
         </div>
@@ -1497,65 +1318,35 @@
   </div>
 </div>
 
-<div class="modal fade" id="serviceImageModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
+<div class="modal fade" id="clinicDetailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
     <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-      <div class="modal-header bg-white border-0 py-3">
-        <h5 class="modal-title fw-bold text-dark" id="serviceImageModalTitle">Service Gallery</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-success text-white border-0">
+        <h5 class="modal-title fw-bold" id="clinicDetailsModalTitle">Clinic</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body p-0 bg-light">
-        <div class="position-relative">
-            <img id="serviceImageModalImg" src="" alt="Service Image" class="img-fluid w-100" style="max-height: 70vh; object-fit: contain;">
-            
-            <button type="button" class="btn btn-dark btn-sm rounded-circle position-absolute top-50 start-0 translate-middle-y ms-3 shadow-sm d-none" id="prevServiceImg" style="width: 32px; height: 32px; z-index: 10;">
-                <i class="bi bi-chevron-left"></i>
-            </button>
-            <button type="button" class="btn btn-dark btn-sm rounded-circle position-absolute top-50 end-0 translate-middle-y me-3 shadow-sm d-none" id="nextServiceImg" style="width: 32px; height: 32px; z-index: 10;">
-                <i class="bi bi-chevron-right"></i>
-            </button>
-        </div>
-        <div id="serviceModalGallery" class="d-flex gap-2 overflow-x-auto p-3 bg-white border-top">
-            <!-- Thumbnails injected via JS -->
-        </div>
+      <div class="modal-body p-4 bg-light-subtle" id="clinicDetailsModalBody"></div>
+      <div class="modal-footer border-0 bg-light-subtle">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
 </div>
 
 {{-- Booking Modal --}}
-<div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false"
-     data-owner-address="{{ $owner->address }}" data-owner-phone="{{ $owner->phone }}">
+<div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-      <form method="POST" action="{{ route('appointments.store') }}" enctype="multipart/form-data" onsubmit="localStorage.removeItem('openBookingModal')">
+      <form method="POST" action="{{ route('appointments.store') }}" enctype="multipart/form-data">
         @csrf
         
-        <input type="hidden" name="clinic_id" id="modalClinicId">
-        <input type="hidden" name="service_id" id="modalServiceId">
-        <input type="hidden" name="service_location" id="bookingServiceLocation">
+        <input type="hidden" name="clinic_id" id="modalClinicId"><input type="hidden" name="service_id" id="modalServiceId">
 
         <div class="modal-header bg-success text-white border-0">
           <h5 class="modal-title fw-bold"><i class="bi bi-calendar-check-fill me-2"></i>Book Appointment</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="localStorage.removeItem('openBookingModal')"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-4 bg-light-subtle">
-          {{-- Service Header/Images --}}
-          <div id="bookingServiceHeader" class="mb-4">
-              <div class="d-flex align-items-center mb-2">
-                  <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 me-3">
-                      <i class="bi bi-briefcase-fill fs-4"></i>
-                  </div>
-                  <div>
-                      <h4 class="fw-bold text-dark mb-0" id="bookingServiceName">Service Name</h4>
-                      <div class="text-muted small" id="bookingServiceDesc"></div>
-                  </div>
-              </div>
-              <div id="bookingServiceImages" class="d-flex gap-2 overflow-x-auto pb-2 mt-3">
-                  <!-- Service images injected via JS -->
-              </div>
-          </div>
-
           <div class="mb-4">
             <label class="form-label fw-bold text-secondary small text-uppercase">Select Your Pet(s)</label>
             <div class="pet-selection-container shadow-sm p-2 rounded border bg-body">
@@ -1616,75 +1407,49 @@
             </style>
           </div>
           <div class="mb-3">
+            <div id="serviceLocationSection" class="mb-3 d-none">
+                <label class="form-label fw-bold text-secondary small text-uppercase">Service Location</label>
+                <div class="d-flex gap-3">
+                    <div class="form-check flex-fill p-0">
+                        <input type="radio" class="btn-check" name="service_location" id="serviceLocationClinic" value="clinic" checked>
+                        <label class="btn btn-outline-success w-100 p-3 rounded-3 d-flex align-items-center justify-content-between shadow-sm" for="serviceLocationClinic">
+                            <span class="fw-bold"><i class="bi bi-hospital me-2"></i>Clinic Service</span>
+                            <i class="bi bi-check-circle-fill d-none" data-selected-icon></i>
+                        </label>
+                    </div>
+                    <div class="form-check flex-fill p-0">
+                        <input type="radio" class="btn-check" name="service_location" id="serviceLocationHome" value="home">
+                        <label class="btn btn-outline-primary w-100 p-3 rounded-3 d-flex align-items-center justify-content-between shadow-sm" for="serviceLocationHome">
+                            <span class="fw-bold"><i class="bi bi-house-door-fill me-2"></i>Home Service</span>
+                            <i class="bi bi-check-circle-fill d-none" data-selected-icon></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="homeServiceFields" class="mb-3 d-none">
+                <label class="form-label fw-bold text-secondary small text-uppercase">Home Service Details</label>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <input type="text" class="form-control shadow-sm" name="service_address" id="serviceAddress" placeholder="Home address">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <input type="text" class="form-control shadow-sm" name="service_contact" id="serviceContact" placeholder="Contact number">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <select class="form-select shadow-sm" id="homeSlotSelect">
+                            <option value="">Select a slot</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="small text-muted mt-2 d-none" id="homeSlotEmpty">No available slots.</div>
+            </div>
+
             <label class="form-label fw-bold text-secondary small text-uppercase">Choose Date & Time</label>
-            <div class="input-group shadow-sm" data-booking-manual-datetime>
+            <div class="input-group shadow-sm">
                 <span class="input-group-text bg-white border-end-0 text-success"><i class="bi bi-clock-fill"></i></span>
-                <input type="datetime-local" name="appointment_date" class="form-control border-start-0 ps-0" required style="cursor: pointer;">
+                <input type="datetime-local" name="appointment_date" id="bookingAppointmentDate" class="form-control border-start-0 ps-0" required style="cursor: pointer;">
             </div>
-            <div class="mt-2 d-none" data-booking-slot-select-group>
-                <div class="d-flex flex-wrap gap-2" data-booking-slot-buttons></div>
-                <div class="small text-muted mt-1">Tap a time slot to select.</div>
-            </div>
-          </div>
-
-          {{-- Clinic Location Map --}}
-          <div class="mb-3">
-              <label class="form-label fw-bold text-secondary small text-uppercase">Clinic Location</label>
-              <div id="bookingClinicMap" class="rounded-3 border border-2 border-secondary shadow-sm" style="height: 300px; width: 100%; z-index: 1; min-height: 300px;"></div>
-          </div>
-
-          {{-- Service Location Preference --}}
-          <div class="mb-3" id="serviceLocationSection" style="display: none;">
-              <label class="form-label fw-bold text-secondary small text-uppercase">Service Location Preference</label>
-
-              <div id="serviceLocationClinicOnly" class="alert alert-light border border-success-subtle d-none small mb-2">
-                  <i class="bi bi-info-circle me-1 text-success"></i>
-                  This service is performed at the clinic only.
-              </div>
-
-              <div id="serviceLocationHomeOnly" class="alert alert-light border border-success-subtle d-none small mb-2">
-                  <i class="bi bi-house-door-fill me-1 text-success"></i>
-                  This service is provided as a home service.
-              </div>
-
-              <div id="serviceLocationBothOptions" class="d-none mb-2">
-                  <div class="d-flex gap-3">
-                      <div class="form-check flex-fill p-0">
-                          <input type="radio" class="btn-check" name="service_location_choice" id="bookingLocationClinic" value="clinic" checked>
-                          <label class="btn btn-outline-success w-100 p-2 rounded-3 d-flex flex-column align-items-center gap-1 shadow-sm" for="bookingLocationClinic">
-                              <i class="bi bi-hospital fs-5"></i>
-                              <span class="small fw-bold">At Clinic</span>
-                          </label>
-                      </div>
-                      <div class="form-check flex-fill p-0">
-                          <input type="radio" class="btn-check" name="service_location_choice" id="bookingLocationHome" value="home">
-                          <label class="btn btn-outline-primary w-100 p-2 rounded-3 d-flex flex-column align-items-center gap-1 shadow-sm" for="bookingLocationHome">
-                              <i class="bi bi-house-door fs-5"></i>
-                              <span class="small fw-bold">Home Service</span>
-                          </label>
-                      </div>
-                  </div>
-              </div>
-
-              <div id="serviceHomeInfo" class="mt-2 d-none">
-                  <div class="card border-0 shadow-sm rounded-3">
-                      <div class="card-body p-3">
-                          <div class="small text-muted text-uppercase fw-bold mb-1">Home Service Details</div>
-                          <div class="small mb-2">
-                              <label class="fw-semibold mb-1">Service Address</label>
-                              <input type="text" name="service_address" class="form-control form-control-sm" data-home-address-input>
-                          </div>
-                          <div class="small mb-1">
-                              <label class="fw-semibold mb-1">Contact Number</label>
-                              <input type="text" name="service_contact" class="form-control form-control-sm" data-home-phone-input>
-                          </div>
-                          <div class="small text-muted mt-1">
-                              Please ensure someone is available at this address during the scheduled time.
-                              Additional travel fees, if any, will be discussed by the clinic.
-                          </div>
-                      </div>
-                  </div>
-              </div>
           </div>
 
           {{-- Price Summary --}}
@@ -1703,17 +1468,16 @@
                     <span class="small fw-bold text-dark">Total Price</span>
                     <span class="fw-bold text-success fs-5" id="bookingTotalPrice">₱0.00</span>
                 </div>
+                <div class="d-flex justify-content-between align-items-center bg-white rounded-3 p-2 mt-2 shadow-sm border border-success-subtle">
+                    <div class="d-flex align-items-center text-success">
+                        <i class="bi bi-wallet2 me-2"></i>
+                        <span class="small fw-bold text-uppercase">Downpayment Required (50%)</span>
+                    </div>
+                    <span class="fw-bold text-success" id="bookingDownpayment">₱0.00</span>
+                </div>
              </div>
           </div>
           
-          {{-- Clinic Reviews --}}
-          <div class="mb-3">
-              <label class="form-label fw-bold text-secondary small text-uppercase">Recent Reviews</label>
-              <div id="bookingClinicReviews" class="list-group list-group-flush border rounded-3 overflow-hidden shadow-sm bg-white">
-                  <div class="p-3 text-center text-muted small">No reviews yet.</div>
-              </div>
-          </div>
-
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary small text-uppercase">Payment Method</label>
             <div class="d-flex gap-3">
@@ -1775,58 +1539,24 @@
                   </div>
               </div>
 
-              {{-- QR Code and Receipt Upload (Added for Immediate Online Payment) --}}
-              <div class="mt-4 pt-4 border-top">
-                  <div class="card border shadow-sm rounded-3 overflow-hidden payment-scan-card">
-                       <div class="card-header bg-primary text-white py-2 px-3 fw-bold small text-uppercase">
-                            <i class="bi bi-qr-code-scan me-2"></i>Scan & Pay
-                       </div>
-                       <div class="card-body p-4 text-center">
-                            <div class="bg-white p-3 rounded-3 d-inline-block shadow-sm mb-3 border qr-wrapper" style="cursor: pointer;" onclick="expandQrImage(this.querySelector('img').src)">
-                                <img src="" id="clinicQrCode" alt="Clinic QR Code" class="img-fluid rounded" style="max-height: 250px; display: none;" onerror="this.style.display='none'; document.getElementById('noQrMessage').style.display='block';">
-                                <p id="noQrMessage" class="text-muted small fst-italic m-0" style="display: none;">No QR Code available for this clinic.</p>
-                                <div class="small text-muted mt-1 fst-italic"><i class="bi bi-arrows-fullscreen me-1"></i>Tap to expand</div>
-                            </div>
-                            <p class="small text-muted mb-0">Scan this QR code using your payment app (GCash/Maya).</p>
-                       </div>
-                  </div>
-
-                  <div class="mt-3">
-                      <label for="paymentReceipt" class="form-label small fw-bold text-body text-uppercase">Upload Payment Receipt <span class="text-danger">*</span></label>
-                      <div class="input-group">
-                           <input type="file" class="form-control" name="receipt" id="paymentReceipt" accept="image/*">
-                           <label class="input-group-text bg-secondary-subtle text-secondary" for="paymentReceipt"><i class="bi bi-upload"></i></label>
+              <div class="mt-3 border-top pt-3" id="onlinePaymentProof">
+                  <div class="fw-bold text-secondary small text-uppercase mb-2">Pay via Clinic QR</div>
+                  <div class="d-flex flex-column flex-md-row gap-3 align-items-start">
+                      <div class="bg-white rounded-3 border p-3 shadow-sm w-100" style="max-width: 280px;" id="clinicQrWrapper">
+                          <img id="clinicQrImage" src="" alt="Clinic QR Code" class="img-fluid rounded-3 d-none">
+                          <div class="text-muted small d-none" id="clinicQrMissing">This clinic has no QR code uploaded yet.</div>
                       </div>
-                      <div class="form-text small"><i class="bi bi-info-circle me-1"></i>Please upload a clear screenshot of your successful transaction.</div>
+                      <div class="flex-grow-1">
+                          <label class="form-label fw-bold text-secondary small text-uppercase">Upload Receipt (Proof)</label>
+                          <input type="file" name="receipt" id="receiptInput" class="form-control shadow-sm" accept="image/*">
+                          <div class="small text-muted mt-2">Upload a clear screenshot/photo of your payment receipt.</div>
+                      </div>
                   </div>
               </div>
-              
-              <style>
-                  body.dark-theme .qr-wrapper {
-                      background-color: #fff !important; /* QR always on white for scanning */
-                  }
-                  body.dark-theme .payment-scan-card {
-                      background-color: rgba(255,255,255,0.05);
-                      border-color: rgba(255,255,255,0.1) !important;
-                  }
-                  body.dark-theme .payment-scan-card .text-muted {
-                      color: #adb5bd !important;
-                  }
-                  body.dark-theme #paymentReceipt {
-                      background-color: rgba(255,255,255,0.05);
-                      border-color: rgba(255,255,255,0.1);
-                      color: #e0e0e0;
-                  }
-                  body.dark-theme .input-group-text {
-                      background-color: rgba(255,255,255,0.1) !important;
-                      border-color: rgba(255,255,255,0.1) !important;
-                      color: #e0e0e0 !important;
-                  }
-              </style>
           </div>
         </div>
         <div class="modal-footer border-0 bg-light-subtle pb-4 px-4">
-          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal" onclick="localStorage.removeItem('openBookingModal')">Cancel</button>
+          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">Confirm Booking</button>
         </div>
       </form>
@@ -1860,96 +1590,58 @@
   </div>
 </div>
 
-<form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-    @csrf
-</form>
-
 <!-- ✅ Paste REVIEW MODAL here -->
 <div class="modal fade" id="reviewModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <form method="POST" action="{{ route('reviews.store') }}" enctype="multipart/form-data">
       @csrf
       <input type="hidden" name="appointment_id" id="reviewAppointment">
       <input type="hidden" name="clinic_id" id="reviewClinic">
 
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Rate Clinic</h5>
+      <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+        <div class="modal-header bg-primary text-white border-0">
+          <div class="d-flex align-items-center gap-2">
+            <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+              <i class="bi bi-star-fill"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0">Rate Clinic</h5>
+              <div class="small opacity-75">Share your experience</div>
+            </div>
+          </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
 
-        <div class="modal-body">
-          <div class="mb-3 text-center">
-            <div id="starRating" class="fs-3 text-warning">
+        <div class="modal-body p-4 bg-light-subtle">
+          <div class="text-center mb-4">
+            <div id="starRating" class="text-warning" style="font-size: 2rem;">
               @for($i=1;$i<=5;$i++)
-                <i class="bi bi-star star" data-value="{{ $i }}"></i>
+                <i class="bi bi-star star" data-value="{{ $i }}" style="cursor:pointer;"></i>
               @endfor
             </div>
             <input type="hidden" name="rating" id="ratingValue" required>
+            <div class="small text-muted mt-2">Tap a star to set your rating.</div>
           </div>
 
           <div class="mb-3">
-              <label class="form-label small text-muted">Add Photos (Optional)</label>
-              <input type="file" name="images[]" class="form-control" multiple accept="image/*">
+            <label class="form-label fw-bold text-secondary small text-uppercase">Review (Optional)</label>
+            <textarea name="review" class="form-control shadow-sm" rows="4" placeholder="Write your experience..."></textarea>
           </div>
 
-          <textarea name="review" class="form-control"
-                    placeholder="Write your experience (optional)"></textarea>
+          <div class="mb-0">
+            <label class="form-label fw-bold text-secondary small text-uppercase">Add Photo (Optional)</label>
+            <input type="file" name="images[]" id="reviewImages" class="form-control shadow-sm" accept="image/*" multiple>
+            <div class="d-flex flex-wrap gap-2 mt-3" id="reviewImagesPreview"></div>
+            <div class="small text-muted mt-2">You can upload up to 5 images.</div>
+          </div>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button class="btn btn-primary">Submit Review</button>
+        <div class="modal-footer border-0 bg-light-subtle pb-4 px-4">
+          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Submit Review</button>
         </div>
       </div>
     </form>
-  </div>
-</div>
-
-<div class="modal fade" id="reportClinicModal" tabindex="-1">
-  <div class="modal-dialog">
-    <form method="POST" action="{{ route('clinicReports.store') }}" enctype="multipart/form-data">
-      @csrf
-      <input type="hidden" name="appointment_id" id="reportAppointment">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title">Report Clinic</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label small text-muted">Describe the issue</label>
-            <textarea name="report_message" class="form-control" rows="4" required></textarea>
-          </div>
-          <div class="mb-3">
-              <label class="form-label small text-muted">Attach proof (optional)</label>
-              <input type="file" name="proof_image" class="form-control" accept="image/*">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button class="btn btn-danger">Submit Report</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-{{-- View Reviews Modal --}}
-<div class="modal fade" id="viewReviewsModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="viewReviewsTitle">Clinic Reviews</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="viewReviewsBody" style="max-height: 70vh; overflow-y: auto;">
-        <!-- Reviews populated via JS -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
   </div>
 </div>
 <!-- Mobile Profile Bottom Sheet -->
@@ -2045,36 +1737,6 @@
     }
     body.dark-theme #mobileThemeBtn span {
         color: #e0e0e0 !important;
-    }
-
-    /* Vet Notes Dark Theme */
-    body.dark-theme #vetNotesModal .modal-content {
-        background: #020617;
-        color: #e5e7eb;
-    }
-    body.dark-theme #vetNotesModal .modal-header,
-    body.dark-theme #vetNotesModal .modal-footer {
-        background: #020617;
-        border-color: #1f2937;
-    }
-    body.dark-theme #vetNotesModal .modal-title,
-    body.dark-theme #vetNotesModal .text-dark {
-        color: #e5e7eb !important;
-    }
-    body.dark-theme #vetNotesModal .card {
-        background: #020617;
-        border-color: #1f2937;
-    }
-    body.dark-theme #vetNotesModal .bg-white,
-    body.dark-theme #vetNotesModal .bg-light,
-    body.dark-theme #vetNotesModal .bg-light-subtle,
-    body.dark-theme #vetNotesModal .bg-primary-subtle,
-    body.dark-theme #vetNotesModal .bg-secondary-subtle {
-        background: #0f172a !important;
-        color: #e5e7eb;
-    }
-    body.dark-theme #vetNotesModal .text-muted {
-        color: #9ca3af !important;
     }
 
     .last-no-border:last-child {
@@ -2203,18 +1865,7 @@
                                     $vaccinationDates = $record->vaccination_dates ?? 'N/A';
                                     $healthCondition = $record->health_condition ?? 'N/A';
                                     $noteContent = $record->vet_notes ?? '';
-
-                                    // Get medications
                                     $petMedications = $appointment->medications->where('pet_id', $pet->id);
-                                    $medicationData = $petMedications->map(function($m) {
-                                        return [
-                                            'name' => $m->medicine_name,
-                                            'dosage' => $m->dosage,
-                                            'schedule' => $m->schedule,
-                                            'period' => ($m->treatment_start ?? '') . ' - ' . ($m->treatment_end ?? '')
-                                        ];
-                                    })->values();
-                                    $medicationsJson = addslashes($medicationData->toJson());
 
                                     // If only 1 pet, show it. If multiple, show none by default (waiting for selection)
                                     $isHidden = $appointment->pets->count() > 1 ? 'd-none' : '';
@@ -2225,10 +1876,10 @@
                                             <div class="fw-bold text-primary fs-5">
                                                 <i class="bi bi-paw me-1"></i>{{ $pet->name }}
                                             </div>
-                                            <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" 
-                                                    onclick="downloadVetNote('{{ $clinicImage }}', '{{ addslashes($clinicName) }}', '{{ $date }}', '{{ addslashes($pet->name) }}', '{{ addslashes(str_replace(["\r", "\n"], ' ', $noteContent)) }}', '{{ $weight }}', '{{ $vaccineStatus }}', '{{ $vaccinationDates }}', '{{ addslashes($healthCondition) }}', '{{ $medicationsJson }}')">
-                                                <i class="bi bi-download me-2"></i>DOWNLOAD
-                                            </button>
+                                            <a class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                                               href="{{ route('pet_owner.medical_record.pdf', ['appointment' => $appointment->id, 'pet' => $pet->id]) }}">
+                                                <i class="bi bi-filetype-pdf me-2"></i>Download PDF
+                                            </a>
                                         </div>
 
                                         <!-- Medical Details Grid -->
@@ -2264,6 +1915,36 @@
                                                 <i class="bi bi-chat-square-text-fill me-2"></i>Veterinarian's Notes
                                             </span>
                                             <p class="mb-0 text-dark" style="white-space: pre-wrap; line-height: 1.6;">{{ $noteContent }}</p>
+                                        </div>
+
+                                        <div class="bg-light p-4 rounded-4 border mt-3">
+                                            <span class="d-block text-primary fw-bold text-uppercase mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">
+                                                <i class="bi bi-capsule-pill me-2"></i>Prescription
+                                            </span>
+                                            @if($petMedications->count() > 0)
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm align-middle mb-0">
+                                                        <thead>
+                                                            <tr class="text-muted small text-uppercase">
+                                                                <th class="border-0">Medicine</th>
+                                                                <th class="border-0">Administration</th>
+                                                                <th class="border-0">Schedule</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach($petMedications as $med)
+                                                                <tr class="border-top">
+                                                                    <td class="fw-bold text-dark">{{ $med->medicine_name ?? 'N/A' }}</td>
+                                                                    <td class="text-dark">{{ $med->dosage ?? 'N/A' }}</td>
+                                                                    <td class="text-dark">{{ $med->schedule ?? 'N/A' }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @else
+                                                <div class="text-muted">No prescription recorded for this visit.</div>
+                                            @endif
                                         </div>
                                     @else
                                         <div class="text-center py-5">
@@ -2422,146 +2103,172 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-function downloadVetNote(clinicImage, clinicName, date, petName, notes, weight, vaccineStatus, vaccinationDates, healthCondition, medicationsJson) {
-    // Parse medications
+function downloadVetNotePdf(btn) {
+    const clinicImage = btn?.dataset?.clinicImage || '';
+    const clinicName = btn?.dataset?.clinicName || 'Clinic';
+    const date = btn?.dataset?.date || '';
+    const petName = btn?.dataset?.petName || 'Pet';
+    const notes = btn?.dataset?.notes || '';
+    const weight = btn?.dataset?.weight || 'N/A';
+    const vaccineStatus = btn?.dataset?.vaccineStatus || 'N/A';
+    const vaccinationDates = btn?.dataset?.vaccinationDates || 'N/A';
+    const healthCondition = btn?.dataset?.healthCondition || 'N/A';
     let medications = [];
     try {
-        medications = JSON.parse(medicationsJson || '[]');
-    } catch(e) {
-        console.error("Error parsing medications", e);
+        medications = JSON.parse(btn?.dataset?.medications || '[]');
+    } catch (_) {
+        medications = [];
     }
 
-    // Build Prescriptions HTML
-    let prescriptionsHtml = '';
-    if (medications.length > 0) {
-        let rows = medications.map(m => `
-            <tr>
-                <td style="padding: 8px; border: 1px solid #eee; color: #333;">${m.name}</td>
-                <td style="padding: 8px; border: 1px solid #eee; color: #333;">${m.dosage}</td>
-                <td style="padding: 8px; border: 1px solid #eee; color: #333;">${m.schedule}</td>
-                <td style="padding: 8px; border: 1px solid #eee; color: #333;">${m.period}</td>
-            </tr>
-        `).join('');
-
-        prescriptionsHtml = `
-            <div style="margin-bottom: 30px;">
-                <h3 style="color: #333; border-left: 4px solid #008080; padding-left: 10px;">Prescriptions</h3>
-                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 8px; border: 1px solid #eee; text-align: left; color: #555;">Medicine</th>
-                            <th style="padding: 8px; border: 1px solid #eee; text-align: left; color: #555;">Dosage</th>
-                            <th style="padding: 8px; border: 1px solid #eee; text-align: left; color: #555;">Schedule</th>
-                            <th style="padding: 8px; border: 1px solid #eee; text-align: left; color: #555;">Duration</th>
+    const medsTable = medications.length
+        ? `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Medicine</th>
+                        <th style="width: 35%;">Administration</th>
+                        <th style="width: 30%;">Schedule</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${medications.map(m => `
+                        <tr>
+                            <td><div class="strong">${(m.medicine_name || 'N/A')}</div></td>
+                            <td>${(m.dosage || 'N/A')}</td>
+                            <td>${(m.schedule || 'N/A')}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        ${rows}
-                    </tbody>
-                </table>
-            </div>
-        `;
-    }
+                    `).join('')}
+                </tbody>
+            </table>
+        `
+        : `<div class="muted">No prescription recorded for this visit.</div>`;
 
-    const content = `
-        <!DOCTYPE html>
+    const html = `
+        <!doctype html>
         <html>
         <head>
-            <title>Vet Note - ${petName}</title>
-            <meta charset="utf-8">
+            <meta charset="utf-8" />
+            <title>Prescription - ${petName}</title>
             <style>
-                body { font-family: Arial, sans-serif; padding: 40px; background-color: #f4f4f4; }
-                .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+                @page { size: A4; margin: 14mm; }
+                * { box-sizing: border-box; }
+                body { font-family: Arial, Helvetica, sans-serif; color: #111827; }
+                .sheet { width: 100%; }
+                .header { display: flex; gap: 16px; align-items: center; border-bottom: 2px solid #0ea5a4; padding-bottom: 12px; margin-bottom: 14px; }
+                .logo { width: 56px; height: 56px; border-radius: 999px; object-fit: cover; border: 1px solid #e5e7eb; }
+                .h1 { font-size: 18px; font-weight: 800; margin: 0; }
+                .sub { margin: 4px 0 0; color: #6b7280; font-size: 12px; }
+                .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+                .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; }
+                .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 4px; }
+                .value { font-size: 12px; font-weight: 700; color: #111827; }
+                .section { margin-top: 14px; }
+                .title { font-size: 12px; font-weight: 800; margin: 0 0 8px; }
+                .note { border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; line-height: 1.5; font-size: 12px; }
+                .table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                .table th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; padding: 8px; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+                .table td { padding: 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+                .strong { font-weight: 800; }
+                .muted { color: #6b7280; font-size: 12px; }
+                .footer { margin-top: 18px; padding-top: 10px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; gap: 12px; font-size: 10px; color: #6b7280; }
+                .sig { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+                .sigline { border-top: 1px solid #111827; padding-top: 6px; font-size: 11px; }
             </style>
         </head>
         <body>
-            <div class="container">
-                <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #008080; padding-bottom: 20px;">
-                    <h1 style="color: #008080; margin: 0;">Vet Note & Medical Record</h1>
-                    <p style="color: #666; margin-top: 5px;">Generated from PetApp Medical Records</p>
-                </div>
-                
-                <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="padding: 8px 0; font-weight: bold; color: #555; width: 150px;">Clinic:</td>
-                            <td style="padding: 8px 0; color: #333;">
-                                <div style="display: flex; align-items: center;">
-                                    <img src="${clinicImage}" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; object-fit: cover; border: 1px solid #ddd;">
-                                    <span>${clinicName}</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0; font-weight: bold; color: #555;">Date:</td>
-                            <td style="padding: 8px 0; color: #333;">${date}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0; font-weight: bold; color: #555;">Pet Name:</td>
-                            <td style="padding: 8px 0; color: #333;">${petName}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #333; border-left: 4px solid #008080; padding-left: 10px;">Medical Details</h3>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #eee; font-weight: bold; color: #555; background: #f4f4f4; width: 30%;">Weight</td>
-                            <td style="padding: 8px; border: 1px solid #eee; color: #333;">${weight} kg</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #eee; font-weight: bold; color: #555; background: #f4f4f4;">Health Condition</td>
-                            <td style="padding: 8px; border: 1px solid #eee; color: #333;">${healthCondition}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #eee; font-weight: bold; color: #555; background: #f4f4f4;">Vaccine Status</td>
-                            <td style="padding: 8px; border: 1px solid #eee; color: #333;">${vaccineStatus}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #eee; font-weight: bold; color: #555; background: #f4f4f4;">Vaccination Dates</td>
-                            <td style="padding: 8px; border: 1px solid #eee; color: #333;">${vaccinationDates}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                ${prescriptionsHtml}
-
-                <div>
-                    <h3 style="color: #333; border-left: 4px solid #008080; padding-left: 10px;">Veterinarian's Notes</h3>
-                    <div style="margin-top: 15px; line-height: 1.6; color: #444; white-space: pre-wrap; text-align: justify; background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 4px;">
-                        ${notes}
+            <div class="sheet">
+                <div class="header">
+                    <img class="logo" src="${clinicImage}" alt="Clinic" />
+                    <div>
+                        <p class="h1">Medical Record & Prescription</p>
+                        <p class="sub">PetApp • Generated document • Save as PDF from the print dialog</p>
                     </div>
                 </div>
 
-                <div style="margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px;">
-                    &copy; ${new Date().getFullYear()} PetApp. All rights reserved.
+                <div class="grid">
+                    <div class="card">
+                        <div class="label">Clinic</div>
+                        <div class="value">${clinicName}</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">Visit Date</div>
+                        <div class="value">${date || 'N/A'}</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">Pet</div>
+                        <div class="value">${petName}</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">Weight</div>
+                        <div class="value">${weight === 'N/A' ? 'N/A' : `${weight} kg`}</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">Health Condition</div>
+                        <div class="value">${healthCondition}</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">Vaccination</div>
+                        <div class="value">${vaccineStatus}</div>
+                        <div class="muted">${vaccinationDates}</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <p class="title">Veterinarian's Notes</p>
+                    <div class="note">${notes || 'N/A'}</div>
+                </div>
+
+                <div class="section">
+                    <p class="title">Prescription</p>
+                    ${medsTable}
+                </div>
+
+                <div class="sig">
+                    <div class="sigline">Veterinarian Signature</div>
+                    <div class="sigline">Pet Owner Signature</div>
+                </div>
+
+                <div class="footer">
+                    <div>Generated: ${new Date().toLocaleString()}</div>
+                    <div>&copy; ${new Date().getFullYear()} PetApp</div>
                 </div>
             </div>
         </body>
         </html>
     `;
-    
-    // Create a Blob from the content
-    const blob = new Blob([content], { type: 'text/html' });
-    
-    // Create a download link
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    
-    // Sanitize filename
-    const safePetName = petName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const safeDate = date.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    a.download = `vet_note_${safePetName}_${safeDate}.html`;
-    
-    // Trigger download
-    document.body.appendChild(a);
-    a.click();
-    
-    // Cleanup
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc || !iframe.contentWindow) {
+        document.body.removeChild(iframe);
+        return;
+    }
+
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    const cleanup = () => {
+        if (iframe.parentNode) {
+            iframe.parentNode.removeChild(iframe);
+        }
+    };
+
+    iframe.contentWindow.onafterprint = cleanup;
+    setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+    }, 250);
+    setTimeout(cleanup, 15000);
 }
 
 function filterAnimals() {
@@ -2645,254 +2352,100 @@ function filterAnimals() {
             </div>
         </div>
     </div>
-        </div>
-    </div>
 </div>
 
-<div class="modal fade" id="clinicUnavailableModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-danger fw-bold">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Clinic Unavailable
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-0">This clinic is unavailable for booking right now.</p>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">OK</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Cancel Appointment Modal -->
-<div class="modal fade" id="cancelAppointmentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Cancel Appointment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <form id="cancelAppointmentForm" action="" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <button type="submit" class="btn btn-danger">Yes, Cancel Appointment</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Location Modal -->
+<!-- Location Selection Modal (Mobile) -->
 <div class="modal fade" id="locationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-            <div class="modal-header border-bottom-0 pb-0 bg-transparent">
-                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-geo-alt-fill me-2 text-danger"></i>Select Location</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0">
+                <div class="w-100">
+                    <div class="d-flex align-items-start justify-content-between gap-3">
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-1">Select City</h5>
+                            @if($selectedLocation)
+                                <div class="small text-muted">Selected: <span class="fw-semibold">{{ $selectedLocation }}</span></div>
+                            @else
+                                <div class="small text-muted">Choose a city to show nearby clinics.</div>
+                            @endif
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="input-group mt-3">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0 shadow-none" id="locationModalSearch" placeholder="Search city">
+                    </div>
+                </div>
             </div>
-            <div class="modal-body p-4">
-                <p class="text-muted small mb-3">Choose a city to find clinics near you.</p>
-                <div class="row g-2">
-                    @foreach(['Bogo City', 'Carcar City', 'Cebu City', 'Danao City', 'Lapu-Lapu City', 'Mandaue City', 'Naga City', 'Talisay City', 'Toledo City'] as $city)
-                        <div class="col-6">
-                            <a href="{{ route('pet_owner.dashboard', ['location' => $city]) }}" 
-                               class="btn w-100 p-3 rounded-4 d-flex align-items-center justify-content-center text-decoration-none border transition-all {{ $selectedLocation == $city ? 'btn-success text-white shadow' : 'btn-light text-dark bg-white' }}"
-                               style="height: 60px;">
-                                <span class="fw-bold">{{ $city }}</span>
+            <div class="modal-body p-3 pt-0">
+                <div class="row g-2" id="locationModalCityList">
+                    @foreach(['Cebu City', 'Lapu-Lapu City', 'Mandaue City', 'Talisay City', 'Danao City', 'Toledo City', 'Carcar City', 'Naga City', 'Bogo City'] as $city)
+                        <div class="col-12 col-md-6" data-city-wrap>
+                            <a href="{{ route('pet_owner.dashboard', ['location' => $city]) }}"
+                               data-city="{{ $city }}"
+                               class="btn {{ $selectedLocation == $city ? 'btn-success' : 'btn-outline-success' }} w-100 rounded-3 py-3 d-flex align-items-center justify-content-between">
+                                <span class="fw-semibold">{{ $city }}</span>
                                 @if($selectedLocation == $city)
-                                    <i class="bi bi-check-circle-fill ms-2"></i>
+                                    <i class="bi bi-check-circle-fill"></i>
                                 @endif
                             </a>
                         </div>
                     @endforeach
                 </div>
-                
+                <div class="text-center text-muted small py-4 d-none" id="locationModalEmpty">No matching city found.</div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
                 @if($selectedLocation)
-                    <div class="mt-4 pt-3 border-top">
-                        <a href="{{ route('pet_owner.dashboard') }}" class="btn btn-outline-danger w-100 rounded-pill py-2">
-                            <i class="bi bi-x-circle me-2"></i>Clear Location Filter
-                        </a>
-                    </div>
+                    <a href="{{ route('pet_owner.dashboard') }}" class="btn btn-outline-danger rounded-pill fw-bold px-4 me-auto">
+                        <i class="bi bi-x-circle me-2"></i>Clear Filter
+                    </a>
                 @endif
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Done</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Clinic Profile Modal -->
-<div class="modal fade" id="clinicProfileModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-      <div class="modal-header bg-success text-white border-0 py-3">
-        <h5 class="modal-title fw-bold d-flex align-items-center">
-            <i class="bi bi-hospital-fill me-2 fs-4"></i>
-            <span>Clinic Profile</span>
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-0 bg-light-subtle">
-        <!-- Hero Section -->
-        <div class="clinic-hero position-relative" style="height: 220px;">
-            <div class="w-100 h-100 bg-success bg-opacity-10 d-flex align-items-center justify-content-center overflow-hidden">
-                <i class="bi bi-hospital text-success opacity-10" style="font-size: 10rem; transform: rotate(-15deg);"></i>
-            </div>
-            <div class="position-absolute bottom-0 start-0 w-100 p-4 d-flex align-items-end" style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
-                <div class="position-relative">
-                    <img id="cpProfileImage" src="" class="rounded-4 border border-4 border-white shadow-lg object-fit-cover" style="width: 140px; height: 140px; margin-bottom: -60px; z-index: 2;">
-                </div>
-                <div class="text-white ms-3 mb-2 flex-grow-1">
-                    <h2 id="cpClinicName" class="fw-bold mb-1 tracking-tight">Clinic Name</h2>
-                    <div id="cpRatingStars" class="text-warning small d-flex align-items-center gap-1 fs-6"></div>
-                </div>
-            </div>
-        </div>
+<script>
+(() => {
+    const modalEl = document.getElementById('locationModal');
+    if (!modalEl) return;
 
-        <div class="container-fluid p-4 pt-5 mt-4">
-            <div class="row g-4">
-                <!-- Left Column: Info & Hours -->
-                <div class="col-md-7">
-                    <!-- Bio Section -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold text-success text-uppercase small mb-3 letter-spacing-1">
-                            <i class="bi bi-info-circle-fill me-2"></i>About the Clinic
-                        </h6>
-                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-                            <p id="cpDescription" class="text-dark mb-0 lh-base fst-italic opacity-75">No description available.</p>
-                        </div>
-                    </div>
+    const input = modalEl.querySelector('#locationModalSearch');
+    const empty = modalEl.querySelector('#locationModalEmpty');
+    const wraps = Array.from(modalEl.querySelectorAll('[data-city-wrap]'));
 
-                    <!-- Contact Details -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold text-success text-uppercase small mb-3 letter-spacing-1">
-                            <i class="bi bi-person-lines-fill me-2"></i>Contact Information
-                        </h6>
-                        <div class="card border-0 shadow-sm rounded-4 p-1 bg-white overflow-hidden">
-                            <div class="list-group list-group-flush">
-                                <div class="list-group-item border-0 py-3 bg-transparent">
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-2 me-3">
-                                            <i class="bi bi-geo-alt-fill fs-5"></i>
-                                        </div>
-                                        <div>
-                                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Location</small>
-                                            <span id="cpAddress" class="text-dark fw-medium small">Address</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="list-group-item border-0 py-3 bg-transparent border-top">
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3">
-                                            <i class="bi bi-telephone-fill fs-5"></i>
-                                        </div>
-                                        <div>
-                                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Phone Number</small>
-                                            <span id="cpPhone" class="text-dark fw-medium small">Phone</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="list-group-item border-0 py-3 bg-transparent border-top">
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-info bg-opacity-10 text-info rounded-3 p-2 me-3">
-                                            <i class="bi bi-envelope-fill fs-5"></i>
-                                        </div>
-                                        <div>
-                                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Email Address</small>
-                                            <span id="cpEmail" class="text-dark fw-medium small">Email</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    const applyFilter = () => {
+        const q = (input?.value || '').trim().toLowerCase();
+        let visible = 0;
+        wraps.forEach(wrap => {
+            const btn = wrap.querySelector('[data-city]');
+            const city = (btn?.dataset.city || '').toLowerCase();
+            const show = !q || city.includes(q);
+            wrap.style.display = show ? '' : 'none';
+            if (show) visible += 1;
+        });
+        if (empty) empty.classList.toggle('d-none', visible !== 0);
+    };
 
-                    <!-- Business Hours -->
-                    <div>
-                        <h6 class="fw-bold text-success text-uppercase small mb-3 letter-spacing-1">
-                            <i class="bi bi-clock-fill me-2"></i>Business Hours
-                        </h6>
-                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-                            <div id="cpHours" class="text-dark fw-medium small"></div>
-                        </div>
-                    </div>
-                </div>
+    modalEl.addEventListener('shown.bs.modal', () => {
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        applyFilter();
+    });
 
-                <!-- Right Column: Gallery -->
-                <div class="col-md-5">
-                    <h6 class="fw-bold text-success text-uppercase small mb-3 letter-spacing-1">
-                        <i class="bi bi-images me-2"></i>Gallery
-                    </h6>
-                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
-                        <div id="cpGallery" class="row g-2 align-content-start">
-                            <!-- Images injected via JS -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-      </div>
-      <div class="modal-footer border-0 bg-light-subtle pb-4 justify-content-center">
-        <button type="button" class="btn btn-light rounded-pill px-5 fw-bold text-secondary shadow-sm" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
-    .letter-spacing-1 { letter-spacing: 1px; }
-    .tracking-tight { letter-spacing: -0.5px; }
-    .hover-scale:hover {
-        transform: scale(1.05);
+    if (input) {
+        input.addEventListener('input', applyFilter);
     }
-    .clinic-gallery-img {
-        height: 100px; 
-        width: 100%; 
-        object-fit: cover; 
-        cursor: pointer; 
-        transition: all 0.3s ease;
-    }
-    .clinic-gallery-img:hover {
-        transform: scale(1.05);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
-        z-index: 5;
-    }
-    
-    /* Dark Theme Support for Modal */
-    body.dark-theme #clinicProfileModal .bg-white {
-        background-color: #2a2a2a !important;
-        border: 1px solid rgba(255,255,255,0.05) !important;
-    }
-    body.dark-theme #clinicProfileModal .text-dark {
-        color: #e0e0e0 !important;
-    }
-    body.dark-theme #clinicProfileModal .list-group-item {
-        border-color: rgba(255,255,255,0.05) !important;
-    }
-    body.dark-theme #clinicProfileModal .bg-light-subtle {
-        background-color: #1e1e1e !important;
-    }
-    body.dark-theme #clinicProfileModal .btn-light {
-        background-color: #333 !important;
-        color: #e0e0e0 !important;
-        border-color: #444 !important;
-    }
-</style>
+})();
+</script>
 
 @endsection
 
 @section('styles')
 @parent
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css">
 <style>
 /* Body Background */
 body {
@@ -2905,13 +2458,14 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: transparent; /* Transparent to remove white block */
+    background: #ffffff; /* Solid white background */
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 10px 0;
+    padding: 12px 0;
     z-index: 1050;
-    pointer-events: none; /* Allow clicks to pass through empty space */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1); /* Add shadow for depth */
+    border-top: 1px solid rgba(0,0,0,0.05);
 }
 .mobile-bottom-nav a {
     display: flex;
@@ -2922,14 +2476,7 @@ body {
     font-size: 0.75rem;
     font-weight: 600;
     transition: all 0.3s;
-    pointer-events: auto; /* Enable clicks on buttons */
-    
-    /* Floating button style */
-    background: transparent !important;
-    padding: 6px 12px;
-    border-radius: 12px;
-    box-shadow: none !important;
-    border: none !important;
+    flex: 1; /* Distribute space evenly */
 }
 .mobile-bottom-nav a.active {
     color: #198754;
@@ -3072,18 +2619,15 @@ body.dark-theme {
 }
 
 body.dark-theme .mobile-bottom-nav {
-    background: transparent;
-    border-top: none;
+    background: #1e1e1e;
+    border-top: 1px solid #333;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
 }
 body.dark-theme .mobile-bottom-nav a {
     color: #adb5bd;
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
 }
 body.dark-theme .mobile-bottom-nav a.active {
     color: #198754;
-    background: transparent !important;
 }
 
 body.dark-theme .card,
@@ -3475,8 +3019,8 @@ body.dark-theme .mobile-search-input::placeholder {
 
 /* Slideshow wrapper */
 .welcome-slideshow {
-    width: 200px;
-    height: 200px;
+    width: 250px;
+    height: 250px;
     position: relative;
     flex-shrink: 0;
 }
@@ -3486,7 +3030,7 @@ body.dark-theme .mobile-search-input::placeholder {
     position: absolute;
     top: 0;
     left: 0;
-    width: 200px;
+    width: 250px;
     height: auto;
     opacity: 0;
     animation-duration: 9s;
@@ -3593,9 +3137,6 @@ body.dark-theme .mobile-header-bar {
     background-color: #1e1e1e !important;
     border-bottom-color: #333 !important;
 }
-body.dark-theme .mobile-app-title {
-    color: #e0e0e0 !important;
-}
 body.dark-theme #sidebarToggle {
     background-color: #2a2a2a;
     border-color: #444;
@@ -3617,6 +3158,57 @@ body.dark-theme .search-bar-container input {
 body.dark-theme .search-bar-container input::placeholder {
     color: #aaa;
 }
+
+/* Location Modal Dark Mode */
+body.dark-theme #locationModal .modal-content {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+body.dark-theme #locationModal .modal-header .modal-title {
+    color: #e0e0e0 !important;
+}
+body.dark-theme #locationModal .btn {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #444;
+}
+body.dark-theme #locationModal .btn:hover {
+    background-color: #3a3a3a;
+}
+body.dark-theme #locationModal .btn.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+    color: #ffffff;
+}
+body.dark-theme #locationModal .input-group-text {
+    background-color: #2a2a2a !important;
+    border-color: #444 !important;
+    color: #e0e0e0 !important;
+}
+body.dark-theme #locationModal .form-control {
+    background-color: #2a2a2a !important;
+    border-color: #444 !important;
+    color: #e0e0e0 !important;
+}
+body.dark-theme #locationModal .form-control::placeholder {
+    color: #adb5bd !important;
+}
+
+body.dark-theme #clinicDetailsModal .modal-content {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+body.dark-theme #clinicDetailsModal .text-dark {
+    color: #e0e0e0 !important;
+}
+body.dark-theme #clinicDetailsModal .text-muted {
+    color: #adb5bd !important;
+}
+body.dark-theme #clinicDetailsModal .bg-light {
+    background-color: #2a2a2a !important;
+    border-color: #444 !important;
+}
+
 body.dark-theme .card .text-dark {
     color: #e0e0e0 !important;
 }
@@ -3627,60 +3219,6 @@ body.dark-theme .bg-success-subtle {
 }
 body.dark-theme .mobile-header-bar img.border {
     border-color: #444 !important;
-}
-
-/* Theme Toggler Desktop Styling */
-@media (min-width: 768px) {
-    .theme-section {
-        margin-top: 1rem;
-    }
-    .theme-label-container {
-        opacity: 0.85;
-        font-size: 0.8rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-    }
-    .theme-buttons-container {
-        margin-top: 0.35rem;
-        padding: 4px;
-        background: rgba(0, 0, 0, 0.18);
-        border-radius: 999px;
-    }
-    .theme-option {
-        border-radius: 999px !important;
-        border-width: 0 !important;
-        font-size: 0.7rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding-top: 0.4rem;
-        padding-bottom: 0.4rem;
-        background-color: transparent;
-        color: rgba(255, 255, 255, 0.85);
-        opacity: 0.8;
-        transition:
-            background-color 0.2s ease,
-            color 0.2s ease,
-            box-shadow 0.2s ease,
-            transform 0.2s ease,
-            opacity 0.2s ease;
-    }
-    .theme-option:hover {
-        opacity: 1;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-    }
-
-    body:not(.dark-theme) .theme-option[data-theme="light"],
-    body.dark-theme .theme-option[data-theme="dark"] {
-        background-color: #ffffff !important;
-        color: #198754 !important;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-        opacity: 1;
-    }
-
-    body.dark-theme .theme-buttons-container {
-        background: rgba(255, 255, 255, 0.06);
-    }
 }
 
 /* Collapsed Sidebar Styles */
@@ -3869,56 +3407,13 @@ body.dark-theme .payment-option-title {
 body.dark-theme .payment-option-desc {
     color: #adb5bd;
 }
-
-/* Leaflet Routing Machine Dark Mode */
-body.dark-theme .leaflet-routing-container {
-    background-color: #2a2a2a !important;
-    color: #e0e0e0 !important;
-    border: 1px solid #444 !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important;
-}
-
-body.dark-theme .leaflet-routing-container h2,
-body.dark-theme .leaflet-routing-container h3 {
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme .leaflet-routing-alt table tbody tr:hover {
-    background-color: #3a3a3a !important;
-    cursor: pointer;
-}
-
-body.dark-theme .leaflet-routing-alt tr {
-    border-bottom: 1px solid #444;
-}
-
-body.dark-theme .leaflet-routing-icon {
-    filter: invert(1) brightness(2);
-}
-
-/* Scrollbar for routing container */
-body.dark-theme .leaflet-routing-container::-webkit-scrollbar {
-    width: 8px;
-}
-body.dark-theme .leaflet-routing-container::-webkit-scrollbar-track {
-    background: #1e1e1e;
-}
-body.dark-theme .leaflet-routing-container::-webkit-scrollbar-thumb {
-    background: #555;
-    border-radius: 4px;
-}
 </style>
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+
 
 @endsection
 
 @section('scripts')
 @parent
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 <script>
 window.openSearchModal = function() {
     const modalEl = document.getElementById('searchModal');
@@ -3976,25 +3471,13 @@ window.searchServices = function(query) {
 
                 if(isMatch) {
                     hasResults = true;
+                    // Format price
                     const formattedPrice = service.price 
                         ? '₱' + parseFloat(service.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) 
                         : 'Ask for Price';
 
-                    let availabilityBadge = '';
-                    if (clinic.is_24_hours) {
-                        availabilityBadge = '<span class="badge bg-primary-subtle text-primary border border-primary px-2 py-1 rounded-pill me-2"><i class="bi bi-clock-history me-1"></i>24 Hours</span>';
-                    } else if (clinic.is_active) {
-                        availabilityBadge = '<span class="badge bg-success-subtle text-success border border-success px-2 py-1 rounded-pill me-2"><i class="bi bi-clock-fill me-1"></i>Open Now</span>';
-                    } else {
-                        availabilityBadge = '<span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1 rounded-pill me-2"><i class="bi bi-x-circle-fill me-1"></i>Closed</span>';
-                    }
-
-                    const hoursText = (!clinic.is_24_hours && clinic.formatted_opening_time && clinic.formatted_closing_time)
-                        ? `<span class="text-muted small"><i class="bi bi-clock me-1"></i>${clinic.formatted_opening_time} - ${clinic.formatted_closing_time}</span>`
-                        : '';
-
                     resultsHTML += `
-                        <button type="button" class="list-group-item list-group-item-action border-0 border-bottom p-3" onclick="openBookingModalWithAvailability(${clinic.id}, ${service.id})" style="transition: background-color 0.2s;">
+                        <button type="button" class="list-group-item list-group-item-action border-0 border-bottom p-3" onclick="openBookingModal(${clinic.id}, ${service.id})" style="transition: background-color 0.2s;">
                              <div class="d-flex align-items-center">
                                 <img src="${clinic.image_url || '/images/default_clinic.png'}" 
                                      alt="${clinic.clinic_name}" 
@@ -4016,29 +3499,10 @@ window.searchServices = function(query) {
                                         <span class="text-truncate">${clinic.clinic_name}</span>
                                     </div>
 
-                                    <div class="d-flex align-items-center gap-1 mb-1">
-                                        ${availabilityBadge}
-                                        ${hoursText}
-                                    </div>
-
                                     ${animals.length > 0 ? `
                                     <div class="d-flex flex-wrap gap-1 mt-1">
                                         ${animals.map(a => `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem; font-weight: 500;">${a}</span>`).join('')}
                                     </div>` : ''}
-
-                                    ${service.images && Array.isArray(service.images) && service.images.length > 0 ? `
-                                        <button type="button" class="btn p-0 border-0 bg-transparent mt-2 service-image-preview" 
-                                                data-images='${JSON.stringify(service.images)}'
-                                                data-name="${service.name || service.service_name || 'Service'}">
-                                            <div class="position-relative">
-                                                <img src="${service.images[0]}" class="rounded border shadow-sm hover-scale" style="width: 50px; height: 50px; object-fit: cover; transition: transform 0.2s;">
-                                                ${service.images.length > 1 ? `
-                                                    <div class="position-absolute bottom-0 end-0 bg-dark bg-opacity-75 text-white px-1 rounded-start small" style="font-size: 0.6rem;">
-                                                        <i class="bi bi-images me-1"></i>+${service.images.length - 1}
-                                                    </div>
-                                                ` : ''}
-                                            </div>
-                                        </button>` : ''}
                                 </div>
                                 
                                 <div class="ms-3 text-secondary">
@@ -4061,77 +3525,22 @@ window.searchServices = function(query) {
     }
 }
 
-window.openBookingModalWithAvailability = function(clinicId, serviceId) {
-    const clinicsDataEl = document.getElementById('clinicsData');
-    if (!clinicsDataEl) {
-        return;
-    }
-
-    let clinics = [];
-    try {
-        clinics = JSON.parse(clinicsDataEl.dataset.clinics || '[]');
-    } catch (e) {
-        return;
-    }
-
-    const clinic = clinics.find(c => c.id == clinicId);
-    if (!clinic) {
-        return;
-    }
-
-    const isAvailable = (clinic.is_24_hours === true) || !!clinic.is_active;
-    if (!isAvailable) {
-        const unavailableModalEl = document.getElementById('clinicUnavailableModal');
-        if (unavailableModalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-            const unavailableModal = new bootstrap.Modal(unavailableModalEl);
-            unavailableModal.show();
-        }
-        return;
-    }
-
-    openBookingModal(clinicId, serviceId);
-}
-
 window.togglePaymentOptions = function() {
     const payOnline = document.getElementById('payOnline');
     const optionsDiv = document.getElementById('onlinePaymentOptions');
-    const receiptInput = document.getElementById('paymentReceipt');
-
+    const receiptInput = document.getElementById('receiptInput');
     if (payOnline && optionsDiv) {
-        const isOnline = payOnline.checked;
-        optionsDiv.style.display = isOnline ? 'block' : 'none';
-        
-        if (receiptInput) {
-            if (isOnline) {
-                receiptInput.setAttribute('required', 'required');
-            } else {
-                receiptInput.removeAttribute('required');
-                receiptInput.value = ''; // Clear file
-            }
+        optionsDiv.style.display = payOnline.checked ? 'block' : 'none';
+    }
+    if (receiptInput) {
+        receiptInput.required = !!(payOnline && payOnline.checked);
+        if (!receiptInput.required) {
+            receiptInput.value = '';
         }
     }
 }
 
 window.openBookingModal = function(clinicId, serviceId) {
-    // Inject Leaflet Routing Machine dependencies dynamically
-    (function() {
-        if (!document.querySelector('link[href*="leaflet-routing-machine"]')) {
-            var link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css';
-            document.head.appendChild(link);
-        }
-        if (!document.querySelector('script[src*="leaflet-routing-machine"]')) {
-            var script = document.createElement('script');
-            script.src = 'https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js';
-            document.head.appendChild(script);
-        }
-    })();
-    
-    // Save state for persistence
-    localStorage.setItem('openBookingModal', JSON.stringify({clinicId, serviceId}));
-
-    const userAddress = "{{ $owner->address ?? '' }}";
     console.log('Opening booking modal for Clinic:', clinicId, 'Service:', serviceId);
     const modalClinicId = document.getElementById('modalClinicId');
     const modalServiceId = document.getElementById('modalServiceId');
@@ -4151,11 +3560,9 @@ window.openBookingModal = function(clinicId, serviceId) {
     let targetClinic = null;
     clinicsData.forEach(c => {
         if(c.id == clinicId && c.services) {
+            targetClinic = c;
             const s = c.services.find(srv => srv.id == serviceId);
-            if(s) {
-                targetService = s;
-                targetClinic = c;
-            }
+            if(s) targetService = s;
         }
     });
 
@@ -4167,39 +3574,6 @@ window.openBookingModal = function(clinicId, serviceId) {
     
     const bookModalEl = document.getElementById('bookModal');
     if(bookModalEl) {
-        // Populate Service Info
-        const nameEl = document.getElementById('bookingServiceName');
-        const descEl = document.getElementById('bookingServiceDesc');
-        const imagesEl = document.getElementById('bookingServiceImages');
-        
-        if(nameEl) nameEl.textContent = targetService.name || targetService.service_name || 'Service';
-        if(descEl) descEl.textContent = targetService.description || '';
-        
-        if(imagesEl) {
-            imagesEl.innerHTML = '';
-            if(targetService.images && Array.isArray(targetService.images) && targetService.images.length > 0) {
-                targetService.images.forEach(img => {
-                    const imgTag = document.createElement('img');
-                    imgTag.src = img;
-                    imgTag.className = 'rounded shadow-sm border object-fit-cover flex-shrink-0 cursor-pointer hover-scale';
-                    imgTag.style.width = '100px';
-                    imgTag.style.height = '100px';
-                    imgTag.style.transition = 'transform 0.2s';
-                    imgTag.onclick = () => {
-                        const previewModal = document.getElementById('serviceImageModal');
-                        const previewImg = document.getElementById('serviceImageModalImg');
-                        if(previewModal && previewImg) {
-                            previewImg.src = img;
-                            new bootstrap.Modal(previewModal).show();
-                        }
-                    };
-                    imagesEl.appendChild(imgTag);
-                });
-            } else {
-                imagesEl.classList.add('d-none');
-            }
-        }
-
         // Close search modal if open
         const searchModalEl = document.getElementById('searchModal');
         if (searchModalEl) {
@@ -4207,254 +3581,136 @@ window.openBookingModal = function(clinicId, serviceId) {
             if (searchModal) searchModal.hide();
         }
 
-        // Populate Reviews
-        const reviewsContainer = document.getElementById('bookingClinicReviews');
-        if(reviewsContainer) {
-            if(targetClinic.reviews && targetClinic.reviews.length > 0) {
-                reviewsContainer.innerHTML = targetClinic.reviews.map(r => {
-                    const imagesHtml = (r.images && Array.isArray(r.images) && r.images.length > 0) ? 
-                        `<div class="d-flex gap-2 mt-2 overflow-x-auto pb-1">
-                            ${r.images.map(img => `<a href="/storage/reviews/${img}" target="_blank"><img src="/storage/reviews/${img}" class="rounded border shadow-sm" style="width: 60px; height: 60px; object-fit: cover;"></a>`).join('')}
-                         </div>` 
-                        : '';
-                        
-                    return `
-                    <div class="list-group-item p-3 border-bottom">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-bold text-dark small">${r.user_name || 'Anonymous'}</span>
-                            <div class="text-warning small">
-                                ${'<i class="bi bi-star-fill"></i>'.repeat(r.rating)}${'<i class="bi bi-star"></i>'.repeat(5-r.rating)}
-                            </div>
-                        </div>
-                        <p class="mb-1 text-muted small fst-italic">"${r.review || ''}"</p>
-                        ${imagesHtml}
-                        <small class="text-secondary opacity-75" style="font-size: 0.75rem;">${r.created_at}</small>
-                    </div>
-                    `;
-                }).join('');
-            } else {
-                reviewsContainer.innerHTML = '<div class="p-3 text-center text-muted small">No reviews available for this clinic.</div>';
-            }
+        const petCheckboxes = bookModalEl.querySelectorAll('.pet-checkbox');
+        petCheckboxes.forEach(chk => {
+            const wrapper = chk.closest('.form-check');
+            if(wrapper) wrapper.style.display = '';
+            chk.disabled = false;
+        });
+        
+        if(targetService && targetService.animals && targetService.animals.length > 0) {
+            const allowedAnimals = targetService.animals.map(a => a.toLowerCase().trim());
+             petCheckboxes.forEach(chk => {
+                const petSpecies = (chk.dataset.species || '').trim().toLowerCase();
+                const match = allowedAnimals.some(allowed => 
+                    petSpecies.includes(allowed) || allowed.includes(petSpecies)
+                );
+                
+                const wrapper = chk.closest('.form-check');
+                if (match) {
+                    if(wrapper) wrapper.style.display = '';
+                    chk.disabled = false;
+                } else {
+                    if(wrapper) wrapper.style.display = 'none';
+                    chk.disabled = true;
+                    chk.checked = false;
+                }
+            });
         }
 
-        // QR Code Setup
-        const qrCodeImg = document.getElementById('clinicQrCode');
-        const noQrMsg = document.getElementById('noQrMessage');
-        if (qrCodeImg && noQrMsg) {
-            if (targetClinic.qr_code) {
-                qrCodeImg.src = "/storage/clinics/qr_codes/" + targetClinic.qr_code;
-                qrCodeImg.style.display = 'block';
-                noQrMsg.style.display = 'none';
-            } else {
-                qrCodeImg.style.display = 'none';
-                noQrMsg.style.display = 'block';
-            }
-        }
-
-        // Service Location Preference Setup
         const serviceLocationSection = document.getElementById('serviceLocationSection');
-        const clinicOnlyNotice = document.getElementById('serviceLocationClinicOnly');
-        const homeOnlyNotice = document.getElementById('serviceLocationHomeOnly');
-        const bothOptions = document.getElementById('serviceLocationBothOptions');
-        const homeInfo = document.getElementById('serviceHomeInfo');
-        const locationHiddenInput = document.getElementById('bookingServiceLocation');
-        const clinicRadio = document.getElementById('bookingLocationClinic');
-        const homeRadio = document.getElementById('bookingLocationHome');
-        const payClinicLabel = document.getElementById('payClinicLabel');
-        const defaultPayClinicText = 'Pay at Clinic';
-        const homePayClinicText = 'Pay After Service';
+        const homeServiceFields = document.getElementById('homeServiceFields');
+        const serviceLocationClinic = document.getElementById('serviceLocationClinic');
+        const serviceLocationHome = document.getElementById('serviceLocationHome');
+        const serviceAddress = document.getElementById('serviceAddress');
+        const serviceContact = document.getElementById('serviceContact');
+        const homeSlotSelect = document.getElementById('homeSlotSelect');
+        const homeSlotEmpty = document.getElementById('homeSlotEmpty');
+        const bookingAppointmentDate = document.getElementById('bookingAppointmentDate');
 
-        const manualDateTimeGroup = bookModalEl.querySelector('[data-booking-manual-datetime]');
-        const slotSelectGroup = bookModalEl.querySelector('[data-booking-slot-select-group]');
-        const slotButtonsContainer = bookModalEl.querySelector('[data-booking-slot-buttons]');
-        const appointmentInput = bookModalEl.querySelector('input[name="appointment_date"]');
+        const normalizeLocationType = (val) => (val || '').toString().trim().toLowerCase();
+        const locationType = normalizeLocationType(targetService.location_type);
+        const supportsHome = locationType === 'home' || locationType === 'both';
+        const supportsClinic = locationType === 'clinic' || locationType === 'both' || locationType === '';
 
-        const applySlotUi = (effectiveLocation) => {
-            if (!appointmentInput || !manualDateTimeGroup || !slotSelectGroup || !slotButtonsContainer) return;
+        const updateHomeFieldsVisibility = () => {
+            const isHome = !!(serviceLocationHome && serviceLocationHome.checked);
+            if (homeServiceFields) homeServiceFields.classList.toggle('d-none', !isHome);
+            if (serviceAddress) serviceAddress.required = isHome;
+            if (serviceContact) serviceContact.required = isHome;
+            if (homeSlotSelect) homeSlotSelect.required = isHome && homeSlotSelect.options.length > 1;
+        };
 
-            slotButtonsContainer.innerHTML = '';
-            slotSelectGroup.classList.add('d-none');
-            manualDateTimeGroup.style.display = '';
-
-            const isHomeLocation = effectiveLocation === 'home';
-            const slots = (targetService && Array.isArray(targetService.slots)) ? targetService.slots : [];
-
-            if (isHomeLocation && slots.length) {
-                const normalizeLabel = (slot) => {
-                    try {
-                        const d = new Date(slot);
-                        if (!isNaN(d.getTime())) {
-                            return d.toLocaleString();
-                        }
-                    } catch (e) {}
-                    return slot;
-                };
-
-                slots.forEach(slot => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'btn btn-outline-success btn-sm';
-                    btn.textContent = normalizeLabel(slot);
-                    btn.dataset.slotValue = slot;
-
-                    btn.addEventListener('click', () => {
-                        const allButtons = slotButtonsContainer.querySelectorAll('button');
-                        allButtons.forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        appointmentInput.value = slot;
-                    });
-
-                    slotButtonsContainer.appendChild(btn);
-                });
-
-                slotSelectGroup.classList.remove('d-none');
-                manualDateTimeGroup.style.display = 'none';
+        if (serviceLocationSection) {
+            if (supportsHome && supportsClinic) {
+                serviceLocationSection.classList.remove('d-none');
+                if (serviceLocationClinic) serviceLocationClinic.checked = true;
+                if (serviceLocationHome) serviceLocationHome.checked = false;
             } else {
-                manualDateTimeGroup.style.display = '';
-                slotSelectGroup.classList.add('d-none');
+                serviceLocationSection.classList.add('d-none');
+                if (serviceLocationClinic) serviceLocationClinic.checked = supportsClinic;
+                if (serviceLocationHome) serviceLocationHome.checked = supportsHome && !supportsClinic;
+            }
+        }
+
+        if (homeSlotSelect) {
+            homeSlotSelect.innerHTML = '<option value="">Select a slot</option>';
+            const slots = Array.isArray(targetService.slots) ? targetService.slots : [];
+            const formatSlotLabel = (slot) => {
+                const raw = (slot || '').toString().trim();
+                if (!raw) return raw;
+
+                const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T');
+                const date = new Date(normalized);
+                if (Number.isNaN(date.getTime())) return raw;
+
+                const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date).toUpperCase();
+                const time = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
+                return `${weekday} ${time}`;
+            };
+            slots.forEach(slot => {
+                const opt = document.createElement('option');
+                opt.value = slot;
+                opt.textContent = formatSlotLabel(slot);
+                homeSlotSelect.appendChild(opt);
+            });
+            const hasSlots = homeSlotSelect.options.length > 1;
+            if (homeSlotEmpty) homeSlotEmpty.classList.toggle('d-none', hasSlots);
+            homeSlotSelect.disabled = !hasSlots;
+            homeSlotSelect.value = '';
+        }
+
+        const onServiceLocationChange = () => {
+            updateHomeFieldsVisibility();
+            const payClinicLabel = document.getElementById('payClinicLabel');
+            if (payClinicLabel) {
+                payClinicLabel.textContent = (serviceLocationHome && serviceLocationHome.checked)
+                    ? 'Pay after Service'
+                    : 'Pay at Clinic';
+            }
+            if (serviceLocationHome && serviceLocationHome.checked) {
+                if (bookingAppointmentDate && homeSlotSelect && homeSlotSelect.value) {
+                    bookingAppointmentDate.value = homeSlotSelect.value;
+                }
             }
         };
 
-        if (serviceLocationSection && locationHiddenInput) {
-            // Reset visibility
-            serviceLocationSection.style.display = 'none';
-            if (clinicOnlyNotice) clinicOnlyNotice.classList.add('d-none');
-            if (homeOnlyNotice) homeOnlyNotice.classList.add('d-none');
-            if (bothOptions) bothOptions.classList.add('d-none');
-            if (homeInfo) homeInfo.classList.add('d-none');
+        if (serviceLocationClinic) serviceLocationClinic.onchange = onServiceLocationChange;
+        if (serviceLocationHome) serviceLocationHome.onchange = onServiceLocationChange;
+        if (homeSlotSelect) {
+            homeSlotSelect.onchange = () => {
+                if (bookingAppointmentDate && homeSlotSelect.value) {
+                    bookingAppointmentDate.value = homeSlotSelect.value;
+                }
+            };
+        }
+        onServiceLocationChange();
 
-            const locationType = (targetService.location_type || 'clinic').toLowerCase();
-
-            // Prepare editable home info inputs with owner's defaults
-            let ownerAddress = '';
-            let ownerPhone = '';
-            if (bookModalEl) {
-                ownerAddress = (bookModalEl.dataset.ownerAddress || '').trim();
-                ownerPhone = (bookModalEl.dataset.ownerPhone || '').trim();
-            }
-            if (homeInfo) {
-                const addrInput = homeInfo.querySelector('[data-home-address-input]');
-                const phoneInput = homeInfo.querySelector('[data-home-phone-input]');
-                if (addrInput && !addrInput.value) addrInput.value = ownerAddress;
-                if (phoneInput && !phoneInput.value) phoneInput.value = ownerPhone;
-            }
-
-            if (locationType === 'clinic') {
-                serviceLocationSection.style.display = '';
-                if (clinicOnlyNotice) clinicOnlyNotice.classList.remove('d-none');
-                locationHiddenInput.value = 'clinic';
-                if (homeInfo) homeInfo.classList.add('d-none');
-                if (payClinicLabel) payClinicLabel.textContent = defaultPayClinicText;
-                applySlotUi('clinic');
-            } else if (locationType === 'home') {
-                serviceLocationSection.style.display = '';
-                if (homeOnlyNotice) homeOnlyNotice.classList.remove('d-none');
-                if (homeInfo) homeInfo.classList.remove('d-none');
-                locationHiddenInput.value = 'home';
-                if (payClinicLabel) payClinicLabel.textContent = homePayClinicText;
-                applySlotUi('home');
-            } else if (locationType === 'both') {
-                serviceLocationSection.style.display = '';
-                if (bothOptions) bothOptions.classList.remove('d-none');
-                // Default to clinic
-                if (clinicRadio) clinicRadio.checked = true;
-                if (homeRadio) homeRadio.checked = false;
-                locationHiddenInput.value = 'clinic';
-                if (payClinicLabel) payClinicLabel.textContent = defaultPayClinicText;
-                applySlotUi('clinic');
-
-                const updateHomeVisibility = () => {
-                    if (!homeInfo) return;
-                    if (homeRadio && homeRadio.checked) {
-                        homeInfo.classList.remove('d-none');
-                        locationHiddenInput.value = 'home';
-                        if (payClinicLabel) payClinicLabel.textContent = homePayClinicText;
-                        applySlotUi('home');
-                    } else {
-                        homeInfo.classList.add('d-none');
-                        locationHiddenInput.value = 'clinic';
-                        if (payClinicLabel) payClinicLabel.textContent = defaultPayClinicText;
-                        applySlotUi('clinic');
-                    }
-                };
-
-                if (clinicRadio) clinicRadio.addEventListener('change', updateHomeVisibility);
-                if (homeRadio) homeRadio.addEventListener('change', updateHomeVisibility);
-                updateHomeVisibility();
+        const clinicQrImage = document.getElementById('clinicQrImage');
+        const clinicQrMissing = document.getElementById('clinicQrMissing');
+        const qrBase = "{{ asset('storage/clinics/qr_codes') }}";
+        if (clinicQrImage && clinicQrMissing) {
+            const qrFilename = targetClinic ? targetClinic.qr_code : null;
+            if (qrFilename) {
+                clinicQrImage.src = qrBase + '/' + qrFilename;
+                clinicQrImage.classList.remove('d-none');
+                clinicQrMissing.classList.add('d-none');
+            } else {
+                clinicQrImage.src = '';
+                clinicQrImage.classList.add('d-none');
+                clinicQrMissing.classList.remove('d-none');
             }
         }
-
-        const petCheckboxes = bookModalEl.querySelectorAll('.pet-checkbox');
-        
-        // Get active category filter if any
-        const activeAnimalBtn = document.querySelector('.animal-btn.active');
-        const activeCategory = activeAnimalBtn ? (activeAnimalBtn.dataset.animal || '').trim().toLowerCase() : null;
-
-        petCheckboxes.forEach(chk => {
-            const wrapper = chk.closest('.form-check');
-            // Reset state first
-            if(wrapper) wrapper.style.display = '';
-            chk.disabled = false;
-
-            const petSpecies = (chk.dataset.species || '').trim().toLowerCase();
-            let isAllowed = true;
-
-            // 1. Service Constraint
-            if (targetService && targetService.animals && targetService.animals.length > 0) {
-                const allowedAnimals = targetService.animals
-                    .map(a => (a || '').toLowerCase().trim())
-                    .filter(a => a !== '');
-
-                // Recognized standard animals (used for main categories)
-                const standardAnimals = [
-                    'dogs','cats','cows','sheep','goats','pigs','horses','rabbits',
-                    'chickens','ducks','turkeys','geese','parrots',
-                    'hamsters','guinea pigs','mice','rats'
-                ];
-
-                const hasOtherCategory = allowedAnimals.includes('other');
-                const isOtherTypeService = allowedAnimals.length > 0 &&
-                    allowedAnimals.every(a => !standardAnimals.includes(a));
-
-                // If the service is truly "other" (no standard animals) or explicitly has "Other",
-                // don't block pets by species – allow other species pets to be selected.
-                if (!isOtherTypeService && !hasOtherCategory) {
-                    const match = allowedAnimals.some(allowed =>
-                        petSpecies.includes(allowed) || allowed.includes(petSpecies)
-                    );
-                    if (!match) isAllowed = false;
-                }
-            }
-
-            // 2. Category Constraint (from user selection)
-            //    Apply only when the service itself is animal-specific and not an "other-type" service.
-            if (activeCategory && isAllowed && targetService && targetService.animals && targetService.animals.length > 0) {
-                const allowedAnimals = targetService.animals
-                    .map(a => (a || '').toLowerCase().trim())
-                    .filter(a => a !== '');
-                const standardAnimals = [
-                    'dogs','cats','cows','sheep','goats','pigs','horses','rabbits',
-                    'chickens','ducks','turkeys','geese','parrots',
-                    'hamsters','guinea pigs','mice','rats'
-                ];
-                const hasOtherCategory = allowedAnimals.includes('other');
-                const isOtherTypeService = allowedAnimals.length > 0 &&
-                    allowedAnimals.every(a => !standardAnimals.includes(a));
-
-                if (!isOtherTypeService && !hasOtherCategory) {
-                    if (!petSpecies.includes(activeCategory) && !activeCategory.includes(petSpecies)) {
-                        isAllowed = false;
-                    }
-                }
-            }
-            
-            // Apply visibility/disabled state
-            if (!isAllowed) {
-                if(wrapper) wrapper.style.display = 'none';
-                chk.disabled = true;
-                chk.checked = false;
-            }
-        });
         
         // Price Calculation Logic
         const basePrice = parseFloat(targetService.price || 0);
@@ -4462,6 +3718,7 @@ window.openBookingModal = function(clinicId, serviceId) {
 
         const updatePrice = () => {
             const checkedPets = Array.from(bookModalEl.querySelectorAll('.pet-checkbox:checked'));
+            // Backend Logic: if petCount < 1, defaults to 1.
             const countForCalc = checkedPets.length > 0 ? checkedPets.length : 1;
             
             const totalPrice = basePrice * countForCalc;
@@ -4470,18 +3727,53 @@ window.openBookingModal = function(clinicId, serviceId) {
             if (downpayment < 50) downpayment = 50;
             if (totalPrice > 0 && downpayment > totalPrice) downpayment = totalPrice;
             
+            // Update Badges in Options
             const optionHalfPrice = document.getElementById('optionHalfPrice');
             const optionFullPrice = document.getElementById('optionFullPrice');
             if(optionHalfPrice) optionHalfPrice.textContent = '₱' + downpayment.toLocaleString('en-US', {minimumFractionDigits: 2});
             if(optionFullPrice) optionFullPrice.textContent = '₱' + totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2});
 
+            // Determine what to show in summary
+            const payOnline = document.getElementById('payOnline').checked;
+            const payFull = document.getElementById('payFull').checked;
+            
+            let amountToPay = 0;
+            let labelText = "Downpayment Required (50%)";
+
+            if (payOnline) {
+                if (payFull) {
+                    amountToPay = totalPrice;
+                    labelText = "Total Payment Required";
+                } else {
+                    amountToPay = downpayment;
+                    labelText = "Downpayment Required (50%)";
+                }
+            } else {
+                // Default to showing downpayment info for clinic payment
+                amountToPay = downpayment;
+            }
+
+            // Update DOM
             const servicePriceEl = document.getElementById('bookingServicePrice');
             const petCountEl = document.getElementById('bookingPetCount');
             const totalPriceEl = document.getElementById('bookingTotalPrice');
+            const downpaymentEl = document.getElementById('bookingDownpayment');
+            // Find label span: it is inside the div that is previous sibling of downpaymentEl's parent? 
+            // Structure: 
+            // <div ...> <div ...> <span>LABEL</span> </div> <span id="bookingDownpayment">...</span> </div>
+            // Actually:
+            // <div class="d-flex ... bg-white ...">
+            //    <div class="d-flex ..."> <i ...></i> <span class="small fw-bold text-uppercase">LABEL</span> </div>
+            //    <span id="bookingDownpayment">...</span>
+            // </div>
+            
+            const labelSpan = downpaymentEl ? downpaymentEl.previousElementSibling.querySelector('span') : null;
 
             if(servicePriceEl) servicePriceEl.textContent = '₱' + basePrice.toLocaleString('en-US', {minimumFractionDigits: 2});
             if(petCountEl) petCountEl.textContent = checkedPets.length;
             if(totalPriceEl) totalPriceEl.textContent = '₱' + totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2});
+            if(downpaymentEl) downpaymentEl.textContent = '₱' + amountToPay.toLocaleString('en-US', {minimumFractionDigits: 2});
+            if(labelSpan) labelSpan.textContent = labelText;
         };
 
         petCheckboxes.forEach(chk => {
@@ -4498,171 +3790,7 @@ window.openBookingModal = function(clinicId, serviceId) {
         updatePrice();
         togglePaymentOptions(); // Ensure correct initial state
         
-        // Map Integration
-        const mapContainer = document.getElementById('bookingClinicMap');
-        if(mapContainer) {
-            mapContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 bg-light text-secondary fw-bold"><div class="spinner-border text-success me-2" role="status"></div> Loading Map...</div>';
-        } else {
-            console.error("Map container 'bookingClinicMap' not found in DOM.");
-        }
-        
-        if (targetClinic && targetClinic.address) {
-                const initMap = () => {
-                 console.log("Initializing map for:", targetClinic.address);
-                 if (typeof L === 'undefined') {
-                     console.error("Leaflet (L) is undefined.");
-                     if(mapContainer) mapContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 bg-light text-danger">Map resources failed to load. Please refresh.</div>';
-                     return;
-                 }
-                 
-                 if (window.clinicMap) {
-                     window.clinicMap.remove();
-                     window.clinicMap = null;
-                 }
-                 
-                // Initialize map
-                try {
-                    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '&copy; OpenStreetMap contributors'
-                    });
-
-                    window.clinicMap = L.map('bookingClinicMap', {
-                        center: [14.5995, 120.9842],
-                        zoom: 13,
-                        layers: [osmLayer]
-                    });
-                     
-                    // 1. Geocode Clinic Address First (Priority)
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ph&q=${encodeURIComponent(targetClinic.address)}`)
-                         .then(res => res.json())
-                         .then(data => {
-                             if (data.length > 0) {
-                                 var destLatLng = L.latLng(data[0].lat, data[0].lon);
-                                 
-                                 // Center map on clinic
-                                 window.clinicMap.setView(destLatLng, 15);
-                                 L.marker(destLatLng).addTo(window.clinicMap).bindPopup(targetClinic.clinic_name).openPopup();
-                                 
-                                 // Define Routing Function
-                                 const drawRoute = (startLatLng, label) => {
-                                      // Custom Icon for User (Green Marker)
-                                      var userIcon = L.icon({
-                                          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-                                          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                                          iconSize: [25, 41],
-                                          iconAnchor: [12, 41],
-                                          popupAnchor: [1, -34],
-                                          shadowSize: [41, 41]
-                                      });
-
-                                      L.marker(startLatLng, {icon: userIcon}).addTo(window.clinicMap).bindPopup(label).openPopup();
-                                      
-                                      if (window.clinicRouteControl) window.clinicMap.removeControl(window.clinicRouteControl);
-                                      
-                                      if (typeof L.Routing !== 'undefined') {
-                                          window.clinicRouteControl = L.Routing.control({
-                                              waypoints: [startLatLng, destLatLng],
-                                              routeWhileDragging: false,
-                                              lineOptions: { styles: [{color: '#0d6efd', opacity: 0.7, weight: 5}] },
-                                              addWaypoints: false,
-                                              draggableWaypoints: false,
-                                              fitSelectedRoutes: true,
-                                              showAlternatives: false,
-                                              collapsible: true,
-                                              show: true,
-                                              createMarker: function() { return null; }
-                                          }).addTo(window.clinicMap);
-                                      } else {
-                                          console.warn("L.Routing undefined. Retrying in 1s...");
-                                          setTimeout(() => drawRoute(startLatLng, label), 1000);
-                                      }
-                                 };
-
-                                 // 2. Determine Start Point
-                                 if (userAddress) {
-                                     // Geocode User Address
-                                     console.log("Geocoding User Address:", userAddress);
-                                     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(userAddress)}&countrycodes=ph`)
-                                        .then(r => r.json())
-                                        .then(udata => {
-                                            if (udata.length > 0) {
-                                                const userLatLng = L.latLng(udata[0].lat, udata[0].lon);
-                                                drawRoute(userLatLng, "Your Location (Saved)");
-                                            } else {
-                                                console.warn("User address not found, trying GPS.");
-                                                window.clinicMap.locate({ setView: false, maxZoom: 16 });
-                                            }
-                                        })
-                                        .catch(e => {
-                                            console.error("User geocode error:", e);
-                                            window.clinicMap.locate({ setView: false, maxZoom: 16 });
-                                        });
-                                 } else {
-                                     // Fallback to GPS
-                                     window.clinicMap.locate({ setView: false, maxZoom: 16 });
-                                 }
-                                 
-                                 // GPS Fallback Handlers
-                                 window.clinicMap.on('locationfound', function (e) {
-                                    // Only use GPS if we haven't already routed via address (or if address failed)
-                                    drawRoute(e.latlng, "Your Location (GPS)");
-                                 });
-                                 
-                                 window.clinicMap.on('locationerror', function (e) {
-                                      console.warn("User location not found:", e.message);
-                                 });
-                                 
-                             } else {
-                                 console.warn("Clinic address not found:", targetClinic.address);
-                                 L.popup()
-                                    .setLatLng(window.clinicMap.getCenter())
-                                    .setContent("Clinic location could not be found.")
-                                    .openOn(window.clinicMap);
-                             }
-                         })
-                        .catch(err => {
-                            console.error("Geocoding error:", err);
-                            if (window.clinicMap && typeof L !== 'undefined') {
-                                L.popup()
-                                    .setLatLng(window.clinicMap.getCenter())
-                                    .setContent("Clinic location could not be found.")
-                                    .openOn(window.clinicMap);
-                            } else if (mapContainer) {
-                                mapContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 bg-light text-muted">Clinic location could not be found.</div>';
-                            }
-                        });
-                 } catch (err) {
-                     console.error("Map initialization error:", err);
-                     if(mapContainer) mapContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 bg-light text-danger">Error initializing map.</div>';
-                 }
-
-                 setTimeout(() => {
-                     window.clinicMap.invalidateSize();
-                 }, 300);
-                };
-
-                // Remove existing listeners to avoid duplicates if any
-                // Note: {once:true} handles self-removal, but if we close and reopen, we add a new one.
-                bookModalEl.addEventListener('shown.bs.modal', initMap, {once:true});
-                
-                // Fallback: If modal is already shown (edge case) or event missed
-                if (bookModalEl.classList.contains('show')) {
-                    initMap();
-                }
-                
-        } else {
-            console.warn('Clinic address missing or targetClinic not found.');
-            if(mapContainer) {
-                mapContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 bg-light text-muted">Clinic address not available for map.</div>';
-            }
-        }
-        
-        // Use existing instance if available to avoid conflicts
-        let bookModal = bootstrap.Modal.getInstance(bookModalEl);
-        if (!bookModal) {
-            bookModal = new bootstrap.Modal(bookModalEl);
-        }
+        const bookModal = new bootstrap.Modal(bookModalEl);
         bookModal.show();
     }
 }
@@ -4729,56 +3857,15 @@ window.showAppointmentDetails = function(data) {
     payBtn.classList.add('d-none');
     paymentStatusContainer.innerHTML = '';
 
-    // Reset UI Elements
-    payBtn.classList.add('d-none');
-    const receiptContainer = document.getElementById('apptDetailsReceiptContainer');
-    const uploadForm = document.getElementById('uploadReceiptForm');
-    const receiptPreview = document.getElementById('receiptPreview');
-    const receiptLink = document.getElementById('receiptLink');
-    const qrContainer = document.getElementById('apptDetailsQrContainer');
-    const qrImage = document.getElementById('apptDetailsQrImage');
-
-    if(qrContainer) qrContainer.classList.add('d-none');
-    if(receiptContainer) receiptContainer.classList.add('d-none');
-
-    // Payment Status Badge Logic
-    if(data.payment_status === 'downpayment_paid' || data.payment_status === 'paid') {
-        paymentStatusContainer.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2"><i class="bi bi-shield-fill-check me-1"></i> Paid</span>';
+    if(data.payment_status === 'unpaid' && (data.status === 'approved' || data.payment_method === 'online')) {
+        payBtn.classList.remove('d-none');
+        payBtn.href = data.checkoutUrl;
+    } else if(data.payment_status === 'downpayment_paid') {
+        paymentStatusContainer.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2"><i class="bi bi-shield-fill-check me-1"></i> Verified</span>';
     } else {
-         paymentStatusContainer.innerHTML = '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-2">Unpaid</span>';
-    }
-
-    // Online Payment Flow (Manual QR + Receipt Upload)
-    if (data.payment_method === 'online' && data.status === 'approved') {
-        
-        // 1. Show QR Code if available
-        if (qrContainer && qrImage && data.qr_code) {
-             qrImage.src = data.qr_code;
-             qrContainer.classList.remove('d-none');
-        }
-
-        // 2. Show Receipt Upload UI
-        if (receiptContainer) {
-            receiptContainer.classList.remove('d-none');
-            uploadForm.action = data.uploadReceiptUrl;
-
-            if (data.payment_receipt) {
-                // Receipt already uploaded
-                uploadForm.classList.add('d-none');
-                receiptPreview.classList.remove('d-none');
-                receiptLink.href = data.payment_receipt;
-                
-                // Update status badge to Verification Pending
-                paymentStatusContainer.innerHTML = '<span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2"><i class="bi bi-hourglass-split me-1"></i> Verification Pending</span>';
-            } else {
-                // Need to upload receipt
-                uploadForm.classList.remove('d-none');
-                receiptPreview.classList.add('d-none');
-            }
-        }
-
-    } else if (data.payment_status === 'unpaid' && data.status === 'approved' && data.payment_method !== 'online') {
-         // Legacy/Other payment methods logic if needed (e.g. Pay at Clinic doesn't need a button)
+         if(data.payment_status === 'unpaid') {
+             paymentStatusContainer.innerHTML = '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-2">Unpaid</span>';
+         }
     }
 
     const modal = new bootstrap.Modal(document.getElementById('appointmentDetailsModal'));
@@ -4837,26 +3924,124 @@ document.addEventListener('DOMContentLoaded', function() {
     const clinicsModalEl = document.getElementById('clinicsModal');
     const clinicsModal = clinicsModalEl ? new bootstrap.Modal(clinicsModalEl) : null;
     const clinicsModalBody = document.getElementById('clinicsModalBody');
+    const clinicDetailsModalEl = document.getElementById('clinicDetailsModal');
+    const clinicDetailsModal = clinicDetailsModalEl ? new bootstrap.Modal(clinicDetailsModalEl) : null;
+    const clinicDetailsModalTitle = document.getElementById('clinicDetailsModalTitle');
+    const clinicDetailsModalBody = document.getElementById('clinicDetailsModalBody');
     const bookModalEl = document.getElementById('bookModal');
     const bookModal = bookModalEl ? new bootstrap.Modal(bookModalEl) : null;
     const modalClinicId = document.getElementById('modalClinicId');
+    let reopenClinicsModalAfterDetails = false;
 
-    // REOPEN MODAL ON REFRESH IF STATE EXISTS
-    const savedModalState = localStorage.getItem('openBookingModal');
-    if (savedModalState) {
-        try {
-            const { clinicId, serviceId } = JSON.parse(savedModalState);
-            if (clinicId && serviceId) {
-                // Short delay to ensure DOM and libraries are ready
-                setTimeout(() => {
-                    window.openBookingModal(clinicId, serviceId);
-                    if(bookModal) bookModal.show();
-                }, 500);
+    const openClinicDetailsModal = (clinic) => {
+        if (!clinicDetailsModal || !clinicDetailsModalTitle || !clinicDetailsModalBody) return;
+
+        reopenClinicsModalAfterDetails = !!clinicsModalEl && clinicsModalEl.classList.contains('show');
+        if (clinicsModal) clinicsModal.hide();
+
+        clinicDetailsModalTitle.textContent = clinic.clinic_name || 'Clinic';
+
+        const imageUrl = clinic.image_url || '{{ asset('images/default_clinic.png') }}';
+        const specializations = Array.isArray(clinic.specializations) ? clinic.specializations.filter(Boolean) : [];
+        const services = Array.isArray(clinic.services) ? clinic.services : [];
+        const gallery = Array.isArray(clinic.gallery) ? clinic.gallery : [];
+        const reviews = Array.isArray(clinic.reviews) ? clinic.reviews : [];
+
+        clinicDetailsModalBody.innerHTML = `
+            <div class="d-flex gap-3 align-items-start mb-3">
+                <img src="${imageUrl}" alt="${clinic.clinic_name || 'Clinic'}" class="rounded-4 shadow-sm object-fit-cover border" style="width:110px;height:110px;">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                        <div class="fw-bold text-dark" style="font-size: 1.25rem;">${clinic.clinic_name || ''}</div>
+                        <span class="badge ${clinic.is_24_hours ? 'bg-primary-subtle text-primary border border-primary' : (clinic.is_active ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger')} px-3 py-2 rounded-pill">
+                            ${clinic.is_24_hours ? '<i class="bi bi-clock-history me-1"></i>24 Hours' : (clinic.is_active ? '<i class="bi bi-clock-fill me-1"></i>Open' : '<i class="bi bi-x-circle-fill me-1"></i>Closed')}
+                        </span>
+                    </div>
+                    <div class="text-muted small mt-1"><i class="bi bi-geo-alt-fill me-1 text-danger"></i>${clinic.address || ''}</div>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <span class="badge bg-warning-subtle text-warning border border-warning px-3 py-2 rounded-pill"><i class="bi bi-star-fill me-1"></i>${(clinic.avg_rating ?? 0).toFixed ? clinic.avg_rating.toFixed(1) : clinic.avg_rating}</span>
+                        ${clinic.phone ? `<span class="badge bg-light text-muted border px-3 py-2 rounded-pill"><i class="bi bi-telephone-fill me-1"></i>${clinic.phone}</span>` : ''}
+                        ${clinic.email ? `<span class="badge bg-light text-muted border px-3 py-2 rounded-pill"><i class="bi bi-envelope-fill me-1"></i>${clinic.email}</span>` : ''}
+                    </div>
+                    ${!clinic.is_24_hours && clinic.formatted_opening_time ? `<div class="small text-muted mt-2"><i class="bi bi-clock me-1"></i>${clinic.formatted_opening_time} - ${clinic.formatted_closing_time || ''}</div>` : ''}
+                </div>
+            </div>
+
+            ${clinic.description ? `<div class="mb-3"><div class="fw-bold text-dark mb-1">About</div><div class="text-muted">${clinic.description}</div></div>` : ''}
+
+            ${specializations.length ? `
+                <div class="mb-3">
+                    <div class="fw-bold text-dark mb-2">Specializations</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        ${specializations.map(s => `<span class="badge bg-secondary-subtle text-secondary border border-secondary px-3 py-2 rounded-pill">${String(s).trim()}</span>`).join('')}
+                    </div>
+                </div>
+            ` : ''}
+
+            ${gallery.length ? `
+                <div class="mb-3">
+                    <div class="fw-bold text-dark mb-2">Gallery</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        ${gallery.map(url => `<a href="${url}" target="_blank" class="d-inline-block"><img src="${url}" class="rounded-3 border shadow-sm object-fit-cover" style="width:90px;height:90px;"></a>`).join('')}
+                    </div>
+                </div>
+            ` : ''}
+
+            <div class="mb-3">
+                <div class="fw-bold text-dark mb-2">Services</div>
+                ${services.length ? `
+                    <div class="d-grid gap-2">
+                        ${services.map(s => `
+                            <button type="button" class="btn btn-outline-success rounded-3 py-3 text-start" data-clinic-id="${clinic.id}" data-service-id="${s.id}">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <div class="fw-bold">${s.name ?? s.service_name ?? 'Service'}</div>
+                                        ${s.description ? `<div class="small text-muted mt-1">${s.description}</div>` : ''}
+                                    </div>
+                                    <div class="fw-bold">${s.price ? `₱${parseFloat(s.price).toFixed(2)}` : ''}</div>
+                                </div>
+                            </button>
+                        `).join('')}
+                    </div>
+                ` : `<div class="alert alert-secondary small mb-0">No services listed for this clinic.</div>`}
+            </div>
+
+            ${reviews.length ? `
+                <div class="mb-0">
+                    <div class="fw-bold text-dark mb-2">Latest Reviews</div>
+                    <div class="d-flex flex-column gap-2">
+                        ${reviews.slice(0, 3).map(r => `
+                            <div class="border rounded-3 p-3 bg-white">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="fw-bold text-dark">${r.user_name || 'Anonymous'}</div>
+                                    <div class="small text-warning"><i class="bi bi-star-fill me-1"></i>${r.rating ?? ''}</div>
+                                </div>
+                                ${r.review ? `<div class="text-muted small">${r.review}</div>` : ''}
+                                ${r.created_at ? `<div class="text-muted small mt-2">${r.created_at}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+        `;
+
+        clinicDetailsModalBody.querySelectorAll('[data-clinic-id][data-service-id]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                clinicDetailsModal.hide();
+                window.openBookingModal(btn.dataset.clinicId, btn.dataset.serviceId);
+            });
+        });
+
+        clinicDetailsModal.show();
+    };
+
+    if (clinicDetailsModalEl) {
+        clinicDetailsModalEl.addEventListener('hidden.bs.modal', () => {
+            if (reopenClinicsModalAfterDetails && clinicsModal) {
+                clinicsModal.show();
             }
-        } catch(e) {
-            console.error('Failed to restore modal state:', e);
-            localStorage.removeItem('openBookingModal');
-        }
+            reopenClinicsModalAfterDetails = false;
+        });
     }
 
     animalButtons.forEach(btn => {
@@ -4868,18 +4053,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const locationInput = document.querySelector('input[name="location"]');
             const selectedLocation = locationInput ? locationInput.value.trim() : '';
+            const locationTerms = [];
+            if (selectedLocation) {
+                locationTerms.push(selectedLocation);
+                if (selectedLocation.toLowerCase().includes('city')) {
+                    locationTerms.push(selectedLocation.replace(/city/i, '').trim());
+                }
+                if (selectedLocation.trim().toLowerCase() === 'cebu city') {
+                    locationTerms.push('Cebu');
+                }
+            }
+            const normalizedLocationTerms = Array.from(new Set(locationTerms.filter(Boolean).map(t => t.toLowerCase())));
 
             const filtered = (clinicsData || []).filter(c => {
                 const matchesAnimal = Array.isArray(c.specializations) &&
                     c.specializations.some(a => (a || '').trim().toLowerCase() === animalName);
                 
-                const matchesLocation = !selectedLocation || (() => {
-                    // Remove "City" from the selected location to match broader address formats
-                    // e.g., "Lapu-Lapu City" matches "Lapu-Lapu"
-                    const searchTerm = selectedLocation.toLowerCase().replace(/\s*city$/i, '').trim();
-                    const address = (c.address || '').toLowerCase();
-                    return address.includes(searchTerm);
-                })();
+                const address = (c.address || '').toLowerCase();
+                const matchesLocation = !normalizedLocationTerms.length ||
+                    normalizedLocationTerms.some(term => address.includes(term));
                 
                 return matchesAnimal && matchesLocation;
             });
@@ -4910,7 +4102,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 filtered.forEach(clinic => {
                     const card = document.createElement('div');
                     card.className = 'card mb-4 border-0 shadow-sm rounded-4 overflow-hidden clinic-card-toggle';
-                    card.style.cursor = 'pointer';
+                     card.style.cursor = 'pointer'; // Make the whole card look clickable
                     
                     // Availability Logic
                     let statusBadge = '';
@@ -4931,73 +4123,52 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Rating Stars
                     const rating = Math.round(clinic.avg_rating || 0);
 
-                    const selectedAnimal = animalName;
-                    const filteredServices = (clinic.services && Array.isArray(clinic.services))
-                        ? clinic.services.filter(s => {
-                            if (s.is_available === false) {
-                                return false;
-                            }
-                            const animals = (s.animals || []).map(a => (a || '').toString().toLowerCase().trim());
-                            if (!animals.length) {
-                                return true;
-                            }
-                            if (!selectedAnimal) {
-                                return true;
-                            }
-                            const selected = selectedAnimal.toLowerCase();
-                            return animals.some(an => an.includes(selected) || selected.includes(an));
-                        })
-                        : [];
-
                     card.innerHTML = `
                         <div class="card-body p-4">
-                                    <div class="d-flex align-items-start mb-3">
-                                        <div class="clinic-profile-trigger" data-id="${clinic.id}" style="cursor: pointer;">
-                                            <img src="${clinic.image_url ?? '/images/default_clinic.png'}"
-                                                 alt="${clinic.clinic_name}"
-                                                 class="me-3 rounded-4 shadow-sm object-fit-cover hover-scale"
-                                                 style="width:90px;height:90px; transition: transform 0.2s;">
-                                        </div>
-                                        <div class="w-100">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h5 class="fw-bold mb-1 text-dark" style="font-size: 1.25rem;">${clinic.clinic_name}</h5>
-                                            <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill me-1 text-danger"></i>${clinic.address}</p>
-                                        </div>
-                                        <div class="text-end">
-                                            <div class="mb-2">${statusBadge}</div>
-                                            <div class="text-warning small" title="${rating} Stars">
-                                                <i class="bi bi-star-fill"></i> ${rating}.0
+                            <button type="button" class="btn p-0 text-start w-100 clinic-details-trigger border-0 bg-transparent">
+                                <div class="d-flex align-items-start mb-3">
+                                    <img src="${clinic.image_url ?? '/images/default_clinic.png'}"
+                                         alt="${clinic.clinic_name}"
+                                         class="me-3 rounded-4 shadow-sm object-fit-cover"
+                                         style="width:90px;height:90px;">
+                                    <div class="w-100">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h5 class="fw-bold mb-1 text-dark" style="font-size: 1.25rem;">${clinic.clinic_name}</h5>
+                                                <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill me-1 text-danger"></i>${clinic.address}</p>
                                             </div>
-                                            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 view-reviews-btn mt-1" data-id="${clinic.id}" style="font-size: 0.8rem;">
-                                                View Reviews
-                                            </button>
+                                            <div class="text-end">
+                                                <div class="mb-2">${statusBadge}</div>
+                                                <div class="text-warning small" title="${rating} Stars">
+                                                    <i class="bi bi-star-fill"></i> ${rating}.0
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    ${!clinic.is_24_hours && clinic.formatted_opening_time ? 
-                                      `<div class="d-inline-block bg-light px-2 py-1 rounded small text-secondary border mt-1">
-                                         <i class="bi bi-clock me-1"></i> ${clinic.formatted_opening_time} - ${clinic.formatted_closing_time}
-                                       </div>` : ''}
+                                        ${!clinic.is_24_hours && clinic.formatted_opening_time ? 
+                                          `<div class="d-inline-block bg-light px-2 py-1 rounded small text-secondary border mt-1">
+                                             <i class="bi bi-clock me-1"></i> ${clinic.formatted_opening_time} - ${clinic.formatted_closing_time}
+                                           </div>` : ''}
+                                    </div>
                                 </div>
-                            </div>
+                            </button>
                             
                             <hr class="my-3 text-muted opacity-25">
 
-                             <div class="text-center small fw-bold ${bookingDisabled ? 'text-muted' : 'text-muted'}">
-                                 <i class="bi bi-chevron-down me-1"></i> ${bookingDisabled ? 'This clinic is unavailable. You can still view services.' : 'Tap to View Services'}
+                             <div class="text-center text-muted small fw-bold">
+                                 <i class="bi bi-chevron-down me-1"></i> Tap to View Services
                              </div>
 
-                            <div class="services-container d-none mt-3">
-                                <p class="small text-muted fw-bold text-uppercase mb-2 ms-1">Select a Service:</p>
-                                ${
-                                    filteredServices && filteredServices.length
+                             <div class="services-container d-none mt-3">
+                                 <p class="small text-muted fw-bold text-uppercase mb-2 ms-1">Select a Service:</p>
+                                 ${
+                                    clinic.services && Array.isArray(clinic.services) && clinic.services.length
                                     ? `
                                         <div class="d-grid gap-2 mb-3">
-                                            ${filteredServices.map(s => `
-                                                <div class="service-item p-3 rounded-3 mb-1 ${(bookingDisabled || s.is_available === false) ? 'service-disabled' : ''}" data-id="${s.id}">
-                                                    <div class="d-flex align-items-start">
-                                                        <div class="flex-grow-1">
+                                            ${clinic.services.map(s => `
+                                                <div class="service-item p-3 rounded-3 mb-1" data-id="${s.id}">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
                                                             <div class="fw-bold text-dark">${s.name ?? s.service_name ?? 'Unnamed Service'}</div>
                                                             ${s.description ? `<div class="small text-muted mt-1">${s.description}</div>` : ''}
                                                             ${s.animals && s.animals.length ? `
@@ -5006,265 +4177,37 @@ document.addEventListener('DOMContentLoaded', function() {
                                                                 </div>
                                                             ` : ''}
                                                         </div>
-                                                        <div class="d-flex flex-column align-items-end ms-3" style="min-width: 90px;">
-                                                            <div class="fw-bold fs-5 ${bookingDisabled ? 'text-muted' : 'text-success'}">
-                                                                ${s.price ? `₱${parseFloat(s.price).toFixed(2)}` : ''}
-                                                            </div>
-                                                            ${s.images && Array.isArray(s.images) && s.images.length ? `
-                                                                <button type="button" class="btn p-0 border-0 bg-transparent mt-2 service-image-preview" 
-                                                                        data-images='${JSON.stringify(s.images)}'
-                                                                        data-name="${s.name ?? s.service_name ?? 'Service'}">
-                                                                    <div class="position-relative">
-                                                                        <img src="${s.images[0]}" class="rounded border shadow-sm hover-scale" style="width: 72px; height: 72px; object-fit: cover; transition: transform 0.2s;">
-                                                                        ${s.images.length > 1 ? `
-                                                                            <div class="position-absolute bottom-0 end-0 bg-dark bg-opacity-75 text-white px-1 rounded-start small" style="font-size: 0.7rem;">
-                                                                                <i class="bi bi-images me-1"></i>+${s.images.length - 1}
-                                                                            </div>
-                                                                        ` : ''}
-                                                                    </div>
-                                                                </button>
-                                                            ` : ''}
+                                                        <div class="fw-bold text-success fs-5">
+                                                            ${s.price ? `₱${parseFloat(s.price).toFixed(2)}` : ''}
                                                         </div>
                                                     </div>
                                                 </div>
                                             `).join('')}
                                         </div>
                                         ${bookingDisabled 
-                                            ? '<div class="alert alert-danger border-0 bg-danger-subtle text-danger small text-center fw-bold"><i class="bi bi-exclamation-circle me-2"></i>This clinic is unavailable for booking right now.</div>' 
+                                            ? '<div class="alert alert-danger border-0 bg-danger-subtle text-danger small text-center fw-bold"><i class="bi bi-exclamation-circle me-2"></i>This clinic is currently closed.</div>' 
                                             : `<button type="button" class="btn btn-success w-100 py-2 rounded-3 fw-bold shadow-sm book-btn d-none" data-id="${clinic.id}"><i class="bi bi-calendar-check me-2"></i>Book Selected Service</button>`
                                         }
                                     `
-                                    : `<div class="alert alert-secondary small text-center">No services listed for <span class="text-capitalize">${selectedAnimal}</span> at this clinic.</div>`
+                                    : '<div class="alert alert-secondary small text-center">No services listed for this clinic.</div>'
                                 }
                             </div>
                         </div>
                     `;
                     clinicsModalBody.appendChild(card);
-
-                    // Add listener for Clinic Profile Modal
-                    const profileTrigger = card.querySelector('.clinic-profile-trigger');
-                    if(profileTrigger) {
-                        profileTrigger.addEventListener('click', (e) => {
+                    const detailsTrigger = card.querySelector('.clinic-details-trigger');
+                    if (detailsTrigger) {
+                        detailsTrigger.addEventListener('click', (e) => {
+                            e.preventDefault();
                             e.stopPropagation();
-                            const cId = profileTrigger.dataset.id;
-                            const clinic = clinicsData.find(c => c.id == cId);
-                            if(clinic) {
-                                document.getElementById('cpClinicName').textContent = clinic.clinic_name;
-                                document.getElementById('cpProfileImage').src = clinic.image_url || '/images/default_clinic.png';
-                                document.getElementById('cpAddress').innerHTML = `<i class="bi bi-geo-alt-fill text-danger me-2"></i>${clinic.address || 'N/A'}`;
-                                document.getElementById('cpPhone').innerHTML = `<i class="bi bi-telephone-fill text-primary me-2"></i>${clinic.phone || 'N/A'}`;
-                                document.getElementById('cpEmail').innerHTML = `<i class="bi bi-envelope-fill text-info me-2"></i>${clinic.email || 'N/A'}`;
-                                
-                                // Description (Bio)
-                                const bioContainer = document.getElementById('cpDescription');
-                                if(bioContainer) {
-                                    bioContainer.textContent = clinic.description || 'No description available.';
-                                }
-
-                                // Rating
-                                const rating = Math.round(clinic.avg_rating || 0);
-                                document.getElementById('cpRatingStars').innerHTML = 
-                                    '<i class="bi bi-star-fill"></i>'.repeat(rating) + 
-                                    '<i class="bi bi-star"></i>'.repeat(5-rating) + 
-                                    ` <span class="ms-1">${rating}.0</span>`;
-
-                                // Hours
-                                const hoursContainer = document.getElementById('cpHours');
-                                if(clinic.is_24_hours) {
-                                    hoursContainer.innerHTML = '<div class="d-flex align-items-center text-primary fw-bold"><i class="bi bi-clock-history me-2"></i>24 Hours / 7 Days</div>';
-                                } else {
-                                    hoursContainer.innerHTML = `
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>Opening Time:</span>
-                                            <span class="fw-bold">${clinic.formatted_opening_time || 'N/A'}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span>Closing Time:</span>
-                                            <span class="fw-bold">${clinic.formatted_closing_time || 'N/A'}</span>
-                                        </div>
-                                    `;
-                                }
-
-                                // Gallery (using clinic gallery)
-                                const gallery = document.getElementById('cpGallery');
-                                gallery.innerHTML = '';
-                                if(clinic.gallery && Array.isArray(clinic.gallery) && clinic.gallery.length > 0) {
-                                    clinic.gallery.forEach(img => {
-                                        const col = document.createElement('div');
-                                        col.className = 'col-4 col-sm-4';
-                                        col.innerHTML = `<img src="${img}" class="img-fluid rounded-3 shadow-sm border clinic-gallery-img" onclick="window.open('${img}', '_blank')">`;
-                                        gallery.appendChild(col);
-                                    });
-                                } else {
-                                    gallery.innerHTML = `
-                                        <div class="col-12 text-center py-4">
-                                            <i class="bi bi-images text-muted opacity-25 fs-1 d-block mb-2"></i>
-                                            <span class="text-muted small fst-italic">No gallery images available.</span>
-                                        </div>
-                                    `;
-                                }
-
-                                const profileModal = new bootstrap.Modal(document.getElementById('clinicProfileModal'));
-                                profileModal.show();
-                            }
+                            openClinicDetailsModal(clinic);
                         });
                     }
-
-                    // Add Review Button Listener
-                    const reviewBtn = card.querySelector('.view-reviews-btn');
-                    if(reviewBtn) {
-                        reviewBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            
-                            const cId = reviewBtn.dataset.id;
-                            const cData = clinicsData.find(c => c.id == cId);
-                            
-                            if(cData) {
-                                const modalEl = document.getElementById('viewReviewsModal');
-                                const modalBody = document.getElementById('viewReviewsBody');
-                                const modalTitle = document.getElementById('viewReviewsTitle');
-                                
-                                if(modalEl && modalBody) {
-                                    modalTitle.textContent = `Reviews for ${cData.clinic_name}`;
-                                    
-                                    if(cData.reviews && cData.reviews.length > 0) {
-                                        modalBody.innerHTML = cData.reviews.map(r => {
-                                            const imagesHtml = (r.images && Array.isArray(r.images) && r.images.length > 0) ? 
-                                                 `<div class="d-flex gap-2 mt-2 overflow-x-auto pb-1">
-                                                     ${r.images.map(img => `<a href="/storage/reviews/${img}" target="_blank"><img src="/storage/reviews/${img}" class="rounded border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;"></a>`).join('')}
-                                                  </div>` 
-                                                 : '';
-                                                 
-                                            return `
-                                                <div class="card mb-3 border-0 shadow-sm bg-light-subtle">
-                                                    <div class="card-body">
-                                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="bg-secondary-subtle rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                                                                    <i class="bi bi-person-fill text-secondary"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <h6 class="mb-0 fw-bold small">${r.user_name || 'Anonymous'}</h6>
-                                                                    <small class="text-muted" style="font-size: 0.7rem;">${r.created_at}</small>
-                                                                </div>
-                                                            </div>
-                                                            <div class="text-warning small">
-                                                                ${'<i class="bi bi-star-fill"></i>'.repeat(r.rating)}${'<i class="bi bi-star"></i>'.repeat(5-r.rating)}
-                                                            </div>
-                                                        </div>
-                                                        <p class="mb-2 text-dark small">"${r.review || ''}"</p>
-                                                        ${imagesHtml}
-                                                    </div>
-                                                </div>
-                                            `;
-                                        }).join('');
-                                    } else {
-                                        modalBody.innerHTML = `
-                                            <div class="text-center py-5 text-muted">
-                                                <i class="bi bi-chat-square-text fs-1 mb-3 d-block opacity-25"></i>
-                                                <p>No reviews yet for this clinic.</p>
-                                            </div>
-                                        `;
-                                    }
-                                    
-                                    const bsModal = new bootstrap.Modal(modalEl);
-                                    bsModal.show();
-                                }
-                            }
-                        });
-                    }
-
-                    const previewButtons = card.querySelectorAll('.service-image-preview');
-                    previewButtons.forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const images = JSON.parse(btn.dataset.images || '[]');
-                            const serviceName = btn.dataset.name || 'Service';
-                            
-                            if (!images.length) return;
-                            
-                            const modalEl = document.getElementById('serviceImageModal');
-                            const imgEl = document.getElementById('serviceImageModalImg');
-                            const titleEl = document.getElementById('serviceImageModalTitle');
-                            const galleryEl = document.getElementById('serviceModalGallery');
-                            const prevBtn = document.getElementById('prevServiceImg');
-                            const nextBtn = document.getElementById('nextServiceImg');
-                            
-                            let currentIndex = 0;
-
-                            const updateModalImage = (index) => {
-                                currentIndex = index;
-                                imgEl.src = images[currentIndex];
-                                
-                                // Update Thumbnails
-                                const thumbnails = galleryEl.querySelectorAll('img');
-                                thumbnails.forEach((thumb, idx) => {
-                                    if(idx === currentIndex) {
-                                        thumb.classList.add('border-success', 'border-2', 'opacity-100');
-                                        thumb.classList.remove('opacity-50');
-                                        thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                                    } else {
-                                        thumb.classList.remove('border-success', 'border-2', 'opacity-100');
-                                        thumb.classList.add('opacity-50');
-                                    }
-                                });
-
-                                // Update Navigation Buttons
-                                if(images.length > 1) {
-                                    prevBtn.classList.remove('d-none');
-                                    nextBtn.classList.remove('d-none');
-                                } else {
-                                    prevBtn.classList.add('d-none');
-                                    nextBtn.classList.add('d-none');
-                                }
-                            };
-
-                            if (modalEl && imgEl) {
-                                updateModalImage(0);
-                                if (titleEl) titleEl.textContent = `${serviceName} Gallery`;
-                                
-                                if (galleryEl) {
-                                    galleryEl.innerHTML = '';
-                                    if (images.length > 1) {
-                                        galleryEl.classList.remove('d-none');
-                                        images.forEach((imgUrl, idx) => {
-                                            const thumb = document.createElement('img');
-                                            thumb.src = imgUrl;
-                                            thumb.className = 'rounded border shadow-sm cursor-pointer hover-scale flex-shrink-0 transition-all ' + (idx === 0 ? 'border-success border-2' : 'opacity-50');
-                                            thumb.style.width = '60px';
-                                            thumb.style.height = '60px';
-                                            thumb.style.objectFit = 'cover';
-                                            thumb.onclick = () => updateModalImage(idx);
-                                            galleryEl.appendChild(thumb);
-                                        });
-                                    } else {
-                                        galleryEl.classList.add('d-none');
-                                    }
-                                }
-
-                                // Setup Navigation Listeners
-                                prevBtn.onclick = () => {
-                                    let newIndex = currentIndex - 1;
-                                    if(newIndex < 0) newIndex = images.length - 1;
-                                    updateModalImage(newIndex);
-                                };
-
-                                nextBtn.onclick = () => {
-                                    let newIndex = currentIndex + 1;
-                                    if(newIndex >= images.length) newIndex = 0;
-                                    updateModalImage(newIndex);
-                                };
-                                
-                                const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                                bsModal.show();
-                            }
-                        });
-                    });
 
                     // Toggle show/hide services by clicking the card itself
                     card.addEventListener('click', function(e) {
                         // Prevent toggling if clicking on a button or service item inside the card
-                        if (e.target.closest('.book-btn') || e.target.closest('.service-item') || e.target.closest('.view-reviews-btn')) {
+                        if (e.target.closest('.book-btn') || e.target.closest('.service-item')) {
                             return;
                         }
 
@@ -5284,20 +4227,18 @@ document.addEventListener('DOMContentLoaded', function() {
                          }
                     });
 
-                    // Show "Book" only after selecting an available service
+                    // Show "Book" only after selecting a service
                     card.querySelectorAll('.service-item').forEach(service => {
                         service.addEventListener('click', function() {
-                            if (this.classList.contains('service-disabled')) {
-                                return;
-                            }
                             const bookBtn = card.querySelector('.book-btn');
                             if (bookBtn) bookBtn.classList.remove('d-none');
                             card.querySelectorAll('.service-item').forEach(si => si.classList.remove('active'));
                             this.classList.add('active');
                             const serviceIdInput = document.getElementById('modalServiceId');
-                            if (serviceIdInput) {
-                                serviceIdInput.value = this.dataset.id;
-                            }
+if (serviceIdInput) {
+    serviceIdInput.value = this.dataset.id; // store the selected service ID
+}
+
                         });
                     });
 
@@ -5466,12 +4407,21 @@ reviewModal?.addEventListener('show.bs.modal', e => {
     const btn = e.relatedTarget;
     document.getElementById('reviewAppointment').value = btn.dataset.appointment;
     document.getElementById('reviewClinic').value = btn.dataset.clinic;
+    const ratingValue = document.getElementById('ratingValue');
+    if (ratingValue) ratingValue.value = '';
+    document.querySelectorAll('#starRating .star').forEach(s => {
+        s.classList.remove('bi-star-fill');
+        s.classList.add('bi-star');
+    });
+    const imagesInput = document.getElementById('reviewImages');
+    const preview = document.getElementById('reviewImagesPreview');
+    if (imagesInput) imagesInput.value = '';
+    if (preview) preview.innerHTML = '';
 });
 
-const reportModal = document.getElementById('reportClinicModal');
-reportModal?.addEventListener('show.bs.modal', e => {
-    const btn = e.relatedTarget;
-    document.getElementById('reportAppointment').value = btn.dataset.appointment;
+reviewModal?.addEventListener('hidden.bs.modal', () => {
+    const preview = document.getElementById('reviewImagesPreview');
+    if (preview) preview.innerHTML = '';
 });
 
 // STAR SELECT
@@ -5483,6 +4433,23 @@ document.querySelectorAll('#starRating .star').forEach(star => {
             s.classList.toggle('bi-star-fill', s.dataset.value <= val);
             s.classList.toggle('bi-star', s.dataset.value > val);
         });
+    });
+});
+
+const reviewImagesInput = document.getElementById('reviewImages');
+reviewImagesInput?.addEventListener('change', () => {
+    const preview = document.getElementById('reviewImagesPreview');
+    if (!preview) return;
+    preview.innerHTML = '';
+    const files = Array.from(reviewImagesInput.files || []).slice(0, 5);
+    files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        const wrap = document.createElement('a');
+        wrap.href = url;
+        wrap.target = '_blank';
+        wrap.className = 'd-inline-block';
+        wrap.innerHTML = `<img src="${url}" class="rounded-3 border shadow-sm object-fit-cover" style="width: 70px; height: 70px;">`;
+        preview.appendChild(wrap);
     });
 });
     const mobileThemeGif = document.getElementById('mobileThemeGif');
@@ -5516,7 +4483,6 @@ document.querySelectorAll('#starRating .star').forEach(star => {
             }
         });
     }
-
 
     // Mobile Profile Bottom Sheet Logic
     const mobileProfileBtn = document.getElementById('mobileProfileBtn');
@@ -5674,35 +4640,6 @@ document.querySelectorAll('#starRating .star').forEach(star => {
     const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
-    // Cancel Appointment Modal Trigger
-    window.showCancelModal = function(appointmentId) {
-        var form = document.getElementById('cancelAppointmentForm');
-        form.action = '/appointments/' + appointmentId + '/cancel';
-        var modal = new bootstrap.Modal(document.getElementById('cancelAppointmentModal'));
-        modal.show();
-    };
 });
-
-function expandQrImage(src) {
-    const modalEl = document.getElementById('qrExpandModal');
-    const imgEl = document.getElementById('expandedQrImage');
-    if (modalEl && imgEl && src) {
-        imgEl.src = src;
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
-    }
-}
 </script>
-
-{{-- QR Expansion Modal --}}
-<div class="modal fade" id="qrExpandModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-transparent border-0 shadow-none">
-            <div class="modal-body p-0 text-center position-relative">
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 bg-dark p-2 rounded-circle" data-bs-dismiss="modal" aria-label="Close"></button>
-                <img src="" id="expandedQrImage" class="img-fluid rounded-3 shadow-lg" style="max-height: 80vh; background-color: white; padding: 10px;">
-            </div>
-        </div>
-    </div>
-</div>
 @endsection

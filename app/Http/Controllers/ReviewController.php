@@ -18,6 +18,7 @@ class ReviewController extends Controller
             'clinic_id'      => 'required|exists:clinics,id',
             'rating'         => 'required|integer|min:1|max:5',
             'review'         => 'nullable|string',
+            'images'         => 'nullable|array|max:5',
             'images.*'       => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 

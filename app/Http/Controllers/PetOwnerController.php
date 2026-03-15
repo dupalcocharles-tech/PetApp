@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\PetOwner;
 use App\Models\Animal;
@@ -37,13 +39,25 @@ class PetOwnerController extends Controller
         $selectedLocation = request('location');
 
         if ($selectedLocation) {
-            $searchLocation = $selectedLocation;
-            if (stripos($selectedLocation, 'City') !== false && strcasecmp($selectedLocation, 'Cebu City') !== 0) {
-                $searchLocation = trim(str_ireplace('City', '', $selectedLocation));
+            $terms = [];
+            $terms[] = trim($selectedLocation);
+
+            if (stripos($selectedLocation, 'City') !== false) {
+                $terms[] = trim(str_ireplace('City', '', $selectedLocation));
             }
 
+            if (strcasecmp(trim($selectedLocation), 'Cebu City') === 0) {
+                $terms[] = 'Cebu';
+            }
+
+            $terms = array_values(array_filter(array_unique($terms)));
+
             $clinics = Clinic::with(['services', 'reviews.owner'])
-                ->where('address', 'LIKE', '%' . $searchLocation . '%')
+                ->where(function ($query) use ($terms) {
+                    foreach ($terms as $term) {
+                        $query->orWhere('address', 'LIKE', '%' . $term . '%');
+                    }
+                })
                 ->get();
         } else {
             $clinics = collect();
@@ -267,8 +281,12 @@ class PetOwnerController extends Controller
      */
     public function update(Request $request)
     {
-        /** @var PetOwner $petOwner */
-        $petOwner = auth()->guard('pet_owner')->user();
+        $petOwnerId = Auth::guard('pet_owner')->id();
+        $petOwner = PetOwner::find($petOwnerId);
+
+        if (!$petOwner) {
+            return redirect()->route('login');
+        }
 
         $request->validate([
             'full_name' => 'required|string|max:255',
@@ -276,26 +294,34 @@ class PetOwnerController extends Controller
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8|confirmed',
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
         ]);
-
-        // Handle profile image upload
-        if ($request->hasFile('profile_image')) {
-            // Delete old image if exists
-            if ($petOwner->profile_image && Storage::exists('public/' . $petOwner->profile_image)) {
-                Storage::delete('public/' . $petOwner->profile_image);
-            }
-
-            // Store new image
-            $imagePath = $request->file('profile_image')->store('profile_images', 'public');
-            $petOwner->profile_image = $imagePath;
-        }
 
         // Update profile fields
         $petOwner->full_name = $request->full_name;
         $petOwner->email = $request->email;
         $petOwner->phone = $request->phone;
         $petOwner->address = $request->address;
+
+        // Handle profile image upload
+        if ($request->hasFile('profile_image')) {
+            $file = $request->file('profile_image');
+            
+            if ($file->isValid()) {
+                // Delete old image if exists
+                if ($petOwner->profile_image) {
+                    Storage::disk('public')->delete($petOwner->profile_image);
+                }
+
+                // Store new image with a clear, sanitized filename
+                $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
+                
+                // Explicitly target the root storage directory
+                $file->move(base_path('storage/profile_images'), $filename);
+                
+                $petOwner->profile_image = 'profile_images/' . $filename;
+            }
+        }
 
         // Update password only if provided
         if ($request->filled('password')) {

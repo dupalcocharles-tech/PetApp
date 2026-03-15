@@ -808,7 +808,7 @@ document.querySelectorAll('.viewClinicBtn').forEach(btn => {
         if (docs && docs.length > 0) {
             docs.forEach(doc => {
                 const ext = doc.split('.').pop().toLowerCase();
-                const path = `/storage/${doc}`;
+                const path = `{{ asset('storage') }}/${doc}`;
                 if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
                     docContainer.innerHTML += `
                         <div class="position-relative hover-scale">
@@ -827,7 +827,7 @@ document.querySelectorAll('.viewClinicBtn').forEach(btn => {
         }
 
         if (receipt) {
-            const receiptPath = `/storage/clinics/subscription_receipts/${receipt}`;
+            const receiptPath = `{{ asset('storage/clinics/subscription_receipts') }}/${receipt}`;
             const receiptBlock = `
                 <div class="mt-3">
                     <h6 class="fw-semibold mb-2">Payment Proof</h6>
@@ -859,7 +859,7 @@ document.querySelectorAll('.viewClinicBtn').forEach(btn => {
         new bootstrap.Modal(document.getElementById('clinicViewModal')).show();
 
         // Fetch Details (Services & Reviews)
-        fetch(`/admin/clinics/${id}/details`)
+        fetch(`{{ url('admin/clinics') }}/${id}/details`)
             .then(response => response.json())
             .then(data => {
                 // Populate Services

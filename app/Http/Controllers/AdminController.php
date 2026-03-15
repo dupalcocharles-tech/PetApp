@@ -201,9 +201,8 @@ class AdminController extends Controller
         // Optionally delete stored documents
         if (!empty($clinic->documents)) {
             foreach ($clinic->documents as $doc) {
-                $path = storage_path("app/public/{$doc}");
-                if (file_exists($path)) {
-                    unlink($path);
+                if (Storage::disk('public')->exists($doc)) {
+                    Storage::disk('public')->delete($doc);
                 }
             }
         }

@@ -15,6 +15,7 @@ use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ClinicReportController;
 use App\Http\Controllers\AdminReportController;
+use App\Http\Controllers\PetOwnerMedicalRecordPdfController;
 
 // --------------------
 // Homepage Redirect
@@ -121,6 +122,10 @@ Route::middleware(['auth:pet_owner'])->group(function () {
 
     // ✅ Add review submission here
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
+    // Medical record PDF
+    Route::get('/pet-owner/appointments/{appointment}/pets/{pet}/medical-record.pdf', [PetOwnerMedicalRecordPdfController::class, 'download'])
+        ->name('pet_owner.medical_record.pdf');
 
     // Cancel Appointment
     Route::put('/appointments/{id}/cancel', [PetOwnerController::class, 'cancelAppointment'])->name('appointments.cancel');

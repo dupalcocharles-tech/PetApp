@@ -261,10 +261,18 @@
                                             "completed" => $appointment->medicalRecords->contains("pet_id", $p->id)
                                         ]);
                                     @endphp
-                                    <tr data-id="{{ $appointment->id }}" 
+                                    <tr style="cursor: pointer;" data-id="{{ $appointment->id }}" 
                                         data-status="{{ $appointment->status }}" 
                                         data-service="{{ optional($appointment->service)->name ?? '' }}"
                                         data-owner="{{ $appointment->owner->full_name ?? 'N/A' }}"
+                                        data-appointment-date="{{ $appointment->appointment_date }}"
+                                        data-payment-method="{{ $appointment->payment_method ?? '' }}"
+                                        data-payment-option="{{ $appointment->payment_option ?? '' }}"
+                                        data-payment-status="{{ $appointment->payment_status ?? '' }}"
+                                        data-receipt-url="{{ $appointment->payment_receipt ? asset('storage/' . $appointment->payment_receipt) : '' }}"
+                                        data-service-location="{{ $appointment->service_location ?? '' }}"
+                                        data-service-address="{{ $appointment->service_address ?? '' }}"
+                                        data-service-contact="{{ $appointment->service_contact ?? '' }}"
                                         data-pets='@json($petsData, JSON_HEX_APOS)'>
 
                                         <td data-label="Pet Owner" class="fw-semibold text-start ps-4">
@@ -602,6 +610,87 @@
   </div>
 </div>
 
+<div class="modal fade" id="clinicAppointmentDetailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Appointment Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="d-flex flex-column gap-3">
+          <div class="bg-light p-3 rounded-4 border border-secondary border-opacity-10">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+              <div>
+                <div class="text-muted small fw-bold text-uppercase">Pet Owner</div>
+                <div class="fw-bold text-dark" id="clinicApptOwner">N/A</div>
+              </div>
+              <div class="text-end">
+                <div class="text-muted small fw-bold text-uppercase">Status</div>
+                <div class="fw-bold text-dark" id="clinicApptStatus">N/A</div>
+              </div>
+            </div>
+            <hr class="my-3 opacity-10">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <div class="text-muted small fw-bold text-uppercase">Service</div>
+                <div class="fw-bold text-dark" id="clinicApptService">N/A</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="text-muted small fw-bold text-uppercase">Date & Time</div>
+                <div class="fw-bold text-dark" id="clinicApptDate">N/A</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="text-muted small fw-bold text-uppercase">Payment</div>
+                <div class="fw-bold text-dark" id="clinicApptPayment">N/A</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="text-muted small fw-bold text-uppercase">Service Location</div>
+                <div class="fw-bold text-dark" id="clinicApptLocation">N/A</div>
+              </div>
+            </div>
+            <div class="mt-3 d-none" id="clinicApptHomeDetails">
+              <div class="text-muted small fw-bold text-uppercase mb-2">Home Service Details</div>
+              <div class="d-flex flex-column gap-2">
+                <div class="d-flex justify-content-between gap-3 flex-wrap">
+                  <div class="text-muted">Address</div>
+                  <div class="fw-bold text-dark text-end" id="clinicApptHomeAddress">N/A</div>
+                </div>
+                <div class="d-flex justify-content-between gap-3 flex-wrap">
+                  <div class="text-muted">Contact</div>
+                  <div class="fw-bold text-dark text-end" id="clinicApptHomeContact">N/A</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-muted small fw-bold text-uppercase mb-2">Pets</div>
+            <div class="d-flex flex-wrap gap-2" id="clinicApptPets"></div>
+          </div>
+
+          <div class="d-none" id="clinicApptReceiptSection">
+            <div class="text-muted small fw-bold text-uppercase mb-2">Online Payment Receipt</div>
+            <div class="bg-light p-3 rounded-4 border border-secondary border-opacity-10 d-flex flex-column flex-md-row gap-3 align-items-start">
+              <img id="clinicApptReceiptImg" src="" alt="Receipt" class="rounded-3 border shadow-sm d-none" style="width: 200px; height: 200px; object-fit: cover;">
+              <div class="flex-grow-1">
+                <div class="fw-bold text-dark mb-2" id="clinicApptReceiptTitle">Receipt</div>
+                <a id="clinicApptReceiptLink" href="#" target="_blank" class="btn btn-outline-primary rounded-pill px-4 d-none">
+                  View Full Receipt
+                </a>
+                <div class="text-muted small d-none" id="clinicApptReceiptMissing">No receipt uploaded yet.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 bg-white rounded-bottom-4 pb-4 pe-4">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {{-- ✅ View Pets Modal --}}
 <div class="modal fade" id="viewPetsModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -853,6 +942,107 @@ document.addEventListener("DOMContentLoaded", function(){
         var successModal = new bootstrap.Modal(successModalEl);
         successModal.show();
     }
+
+    const clinicApptDetailsModalEl = document.getElementById('clinicAppointmentDetailsModal');
+    const clinicApptDetailsModal = clinicApptDetailsModalEl ? new bootstrap.Modal(clinicApptDetailsModalEl) : null;
+
+    const formatApptDate = (raw) => {
+        const value = (raw || '').toString().trim();
+        if (!value) return 'N/A';
+        const normalized = value.includes('T') ? value : value.replace(' ', 'T');
+        const date = new Date(normalized);
+        if (Number.isNaN(date.getTime())) return value;
+        const d = new Intl.DateTimeFormat('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).format(date);
+        const t = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
+        return `${d} ${t}`;
+    };
+
+    document.querySelectorAll('tr[data-id][data-owner][data-service]').forEach(row => {
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('button, a, form, input, label')) return;
+            if (!clinicApptDetailsModal) return;
+
+            const ownerEl = document.getElementById('clinicApptOwner');
+            const serviceEl = document.getElementById('clinicApptService');
+            const dateEl = document.getElementById('clinicApptDate');
+            const statusEl = document.getElementById('clinicApptStatus');
+            const paymentEl = document.getElementById('clinicApptPayment');
+            const locationEl = document.getElementById('clinicApptLocation');
+            const petsEl = document.getElementById('clinicApptPets');
+            const receiptSection = document.getElementById('clinicApptReceiptSection');
+            const receiptImg = document.getElementById('clinicApptReceiptImg');
+            const receiptLink = document.getElementById('clinicApptReceiptLink');
+            const receiptMissing = document.getElementById('clinicApptReceiptMissing');
+            const homeDetails = document.getElementById('clinicApptHomeDetails');
+            const homeAddress = document.getElementById('clinicApptHomeAddress');
+            const homeContact = document.getElementById('clinicApptHomeContact');
+
+            if (ownerEl) ownerEl.textContent = row.dataset.owner || 'N/A';
+            if (serviceEl) serviceEl.textContent = row.dataset.service || 'N/A';
+            if (dateEl) dateEl.textContent = formatApptDate(row.dataset.appointmentDate);
+            if (statusEl) statusEl.textContent = (row.dataset.status || 'N/A').toString();
+
+            const pm = (row.dataset.paymentMethod || '').toLowerCase();
+            const ps = row.dataset.paymentStatus || '';
+            const po = row.dataset.paymentOption || '';
+            if (paymentEl) {
+                const pieces = [];
+                if (pm) pieces.push(pm === 'online' ? 'Online' : 'Clinic');
+                if (po) pieces.push(po);
+                if (ps) pieces.push(ps);
+                paymentEl.textContent = pieces.length ? pieces.join(' • ') : 'N/A';
+            }
+
+            const serviceLoc = (row.dataset.serviceLocation || '').toLowerCase();
+            if (locationEl) locationEl.textContent = serviceLoc ? serviceLoc : 'clinic';
+            if (homeDetails) {
+                const isHome = serviceLoc === 'home';
+                homeDetails.classList.toggle('d-none', !isHome);
+                if (homeAddress) homeAddress.textContent = row.dataset.serviceAddress || 'N/A';
+                if (homeContact) homeContact.textContent = row.dataset.serviceContact || 'N/A';
+            }
+
+            if (petsEl) {
+                petsEl.innerHTML = '';
+                let pets = [];
+                try {
+                    pets = JSON.parse(row.dataset.pets || '[]');
+                } catch (_) {}
+                pets.forEach(p => {
+                    const chip = document.createElement('div');
+                    chip.className = 'd-flex align-items-center bg-light rounded-pill pe-3 ps-1 py-1 border border-secondary border-opacity-10';
+                    chip.innerHTML = `
+                        <img src="${p.image || '{{ asset('images/pets/default.png') }}'}" class="rounded-circle me-2 object-fit-cover border border-2 border-white shadow-sm" style="width: 28px; height: 28px;">
+                        <div class="small fw-bold text-dark lh-1">${p.name || 'Pet'}</div>
+                    `;
+                    petsEl.appendChild(chip);
+                });
+            }
+
+            if (receiptSection && receiptImg && receiptLink && receiptMissing) {
+                const receiptUrl = row.dataset.receiptUrl || '';
+                const isOnline = pm === 'online';
+                receiptSection.classList.toggle('d-none', !isOnline);
+                if (isOnline) {
+                    if (receiptUrl) {
+                        receiptImg.src = receiptUrl;
+                        receiptImg.classList.remove('d-none');
+                        receiptLink.href = receiptUrl;
+                        receiptLink.classList.remove('d-none');
+                        receiptMissing.classList.add('d-none');
+                    } else {
+                        receiptImg.src = '';
+                        receiptImg.classList.add('d-none');
+                        receiptLink.href = '#';
+                        receiptLink.classList.add('d-none');
+                        receiptMissing.classList.remove('d-none');
+                    }
+                }
+            }
+
+            clinicApptDetailsModal.show();
+        });
+    });
 
     // Toggle Next Appointment
     const toggleNextApptBtn = document.getElementById('toggleNextAppointmentBtn');
