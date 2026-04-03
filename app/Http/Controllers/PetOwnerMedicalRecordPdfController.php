@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Pet;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 
 class PetOwnerMedicalRecordPdfController extends Controller
@@ -69,22 +68,42 @@ class PetOwnerMedicalRecordPdfController extends Controller
             $clinicLogoDataUri = $toDataUri($defaultLogoPath);
         }
 
-        $pdf = Pdf::loadView('pdf.medical_record', [
+        $payload = [
             'appointment' => $appointment,
             'pet' => $pet,
             'clinic' => $clinic,
             'record' => $record,
             'medications' => $medications,
             'clinicLogoDataUri' => $clinicLogoDataUri,
-        ])->setPaper('a4')
-            ->setOptions([
-                'isRemoteEnabled' => true,
-            ]);
+        ];
 
         $safePet = preg_replace('/[^A-Za-z0-9_-]/', '_', (string) $pet->name);
         $safeDate = preg_replace('/[^A-Za-z0-9_-]/', '_', (string) $appointment->appointment_date);
+        $filename = 'medical_record_' . $safePet . '_' . $safeDate . '.pdf';
 
-        return $pdf->download('medical_record_' . $safePet . '_' . $safeDate . '.pdf');
+        $html = view('pdf.medical_record', $payload)->render();
+
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)
+                ->setPaper('a4')
+                ->setOptions(['isRemoteEnabled' => true]);
+
+            return $pdf->download($filename);
+        }
+
+        if (class_exists(\Dompdf\Dompdf::class)) {
+            $dompdf = new \Dompdf\Dompdf(['isRemoteEnabled' => true]);
+            $dompdf->loadHtml($html, 'UTF-8');
+            $dompdf->setPaper('A4');
+            $dompdf->render();
+
+            return response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]);
+        }
+
+        abort(500, 'PDF generator not available. Please install barryvdh/laravel-dompdf.');
     }
 }
 

@@ -127,6 +127,17 @@
             padding-bottom: 0.8rem;
             font-size: 1rem;
         }
+        .mobile-signup-actions .btn {
+            padding: 0.3rem 0.5rem;
+            line-height: 1;
+        }
+    }
+
+    .mobile-signup-actions .btn {
+        font-size: clamp(0.6rem, 1.9vw, 0.78rem);
+        padding: clamp(0.26rem, 1.2vw, 0.38rem) clamp(0.42rem, 2.1vw, 0.62rem);
+        line-height: 1;
+        white-space: nowrap;
     }
 
     /* Floating Bubbles */
@@ -220,8 +231,17 @@
                 <span class="fw-bold fs-3 text-success">PetApp</span>
             </a>
 
+            <div class="d-flex d-lg-none align-items-center gap-2 mobile-signup-actions position-absolute top-50 end-0 translate-middle-y me-2">
+                <a href="{{ route('auth.signup', ['role' => 'pet_owner']) }}" class="btn btn-outline-success rounded-pill fw-semibold">
+                    Pet Owner Sign Up
+                </a>
+                <a href="{{ route('auth.signup', ['role' => 'clinic_staff']) }}" class="btn btn-outline-secondary rounded-pill fw-semibold">
+                    Clinic Staff Sign Up
+                </a>
+            </div>
+
             <!-- Mobile Toggle -->
-            <button class="navbar-toggler border-0 shadow-none p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+            <button class="navbar-toggler border-0 shadow-none p-0 d-none d-lg-inline-flex" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <div class="bg-success-subtle p-2 rounded-3">
                     <span class="navbar-toggler-icon"></span>
@@ -230,7 +250,7 @@
 
             <!-- Nav Links -->
             <div class="collapse navbar-collapse justify-content-end mt-3 mt-lg-0" id="navbarNav">
-                <div class="d-flex flex-column flex-lg-row gap-2">
+                <div class="d-none d-lg-flex flex-lg-row gap-2">
                     <a href="{{ route('auth.signup', ['role' => 'pet_owner']) }}" class="btn btn-outline-success rounded-pill px-4 fw-semibold">
                         Pet Owner Sign Up
                     </a>

@@ -262,7 +262,7 @@
                      <div class="card border-0 shadow-sm rounded-4 h-100 hover-lift transition-all cursor-pointer" data-bs-toggle="modal" data-bs-target="#vetNotesModal">
                         <div class="card-body p-3 d-flex flex-column align-items-center justify-content-center text-center">
                             <div class="bg-warning bg-opacity-10 p-3 rounded-circle mb-3">
-                                <img src="{{ asset('images/notes.gif') }}" alt="Vet Notes" style="width: 40px; height: 40px; object-fit: contain;">
+                                <img src="{{ asset('images/notes.gif') }}" alt="Vet Notes" class="dark-invert-gif" style="width: 40px; height: 40px; object-fit: contain;">
                             </div>
                             <h6 class="fw-bold text-dark mb-1">Vet Notes</h6>
                             <small class="text-muted">Health Records</small>
@@ -275,7 +275,7 @@
                      <a href="{{ route('pets.create') }}" class="card border-0 shadow-sm rounded-4 h-100 hover-lift transition-all text-decoration-none">
                         <div class="card-body p-3 d-flex flex-column align-items-center justify-content-center text-center">
                             <div class="bg-danger bg-opacity-10 p-3 rounded-circle mb-3">
-                                <img src="{{ asset('images/cat-playing.gif') }}" alt="Add Pet" style="width: 40px; height: 40px; object-fit: contain;">
+                                <img src="{{ asset('images/cat-playing.gif') }}" alt="Add Pet" class="dark-invert-gif" style="width: 40px; height: 40px; object-fit: contain;">
                             </div>
                             <h6 class="fw-bold text-dark mb-1">Add Pet</h6>
                             <small class="text-muted">New Profile</small>
@@ -774,12 +774,12 @@
     </a>
 
     <a href="#" data-bs-toggle="modal" data-bs-target="#vetNotesModal">
-        <img src="{{ asset('images/notes.gif') }}" alt="Vet Notes" style="width: 40px; height: 40px; margin-bottom: 2px;">
+        <img src="{{ asset('images/notes.gif') }}" alt="Vet Notes" class="dark-invert-gif" style="width: 40px; height: 40px; margin-bottom: 2px;">
         <span>Vet Notes</span>
     </a>
 
     <a href="{{ route('pets.create') }}" class="{{ request()->routeIs('pets.create') ? 'active' : '' }}">
-        <img src="{{ asset('images/cat-playing.gif') }}" alt="Add Pet" style="width: 40px; height: 40px; margin-bottom: 2px;">
+        <img src="{{ asset('images/cat-playing.gif') }}" alt="Add Pet" class="dark-invert-gif" style="width: 40px; height: 40px; margin-bottom: 2px;">
         <span>Add Pet</span>
     </a>
 
@@ -1089,6 +1089,10 @@
     /* Mobile Bottom Nav Dark Mode - Invert Black to White, preserve other colors */
     body.dark-theme .mobile-bottom-nav img {
         filter: invert(1) hue-rotate(180deg);
+    }
+
+    body.dark-theme img.dark-invert-gif {
+        filter: invert(1) brightness(2) saturate(0) !important;
     }
 </style>
 
@@ -1584,7 +1588,10 @@
       </div>
       <div class="modal-footer border-0 bg-light-subtle justify-content-center pb-4">
         <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Stay</button>
-        <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" id="confirmLogoutBtn">Yes, Logout</button>
+        <form action="{{ route('logout') }}" method="POST" class="m-0">
+          @csrf
+          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Yes, Logout</button>
+        </form>
       </div>
     </div>
   </div>
@@ -4506,17 +4513,6 @@ reviewImagesInput?.addEventListener('change', () => {
         // Close when clicking the handle bar (optional UX)
         const handle = mobileProfileSheet.querySelector('.sheet-handle-bar');
         if(handle) handle.addEventListener('click', closeSheet);
-    }
-
-    // -------------------------------
-    // LOGOUT BUTTON
-    // -------------------------------
-    const logoutBtn = document.getElementById('confirmLogoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            const logoutForm = document.getElementById('logout-form');
-            if (logoutForm) logoutForm.submit();
-        });
     }
 
     // -------------------------------
