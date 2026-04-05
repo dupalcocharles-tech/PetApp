@@ -156,6 +156,12 @@
             {{-- Welcome Container --}}
             {{-- Desktop Header & Hero --}}
             <div class="py-4">
+                @if($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show mb-4 rounded-4 shadow-sm" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $errors->first() }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show mb-4 rounded-4 shadow-sm" role="alert">
                         <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
@@ -3911,6 +3917,16 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             closeSidebar();
         });
+
+    @if($errors->any() && (old('clinic_id') || old('pet_ids') || old('payment_method') || old('appointment_date')))
+        const bookModalEl = document.getElementById('bookModal');
+        if (bookModalEl) {
+            try {
+                const bookModal = new bootstrap.Modal(bookModalEl);
+                bookModal.show();
+            } catch (_) {}
+        }
+    @endif
 
     sidebar?.querySelectorAll('a.nav-link').forEach(link => {
         link.addEventListener('click', () => {
