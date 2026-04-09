@@ -11,7 +11,6 @@ use App\Models\ClinicBanAppeal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
@@ -53,21 +52,16 @@ class AdminController extends Controller
     public function dashboard()
     {
         $admin = Auth::guard('admin')->user();
-        $hasVerificationDenial = Schema::hasColumn('clinics', 'verification_denied_at');
 
         // Quick stats
         $totalClinics = Clinic::count();
         $verifiedClinics = Clinic::where('is_verified', 1)->count();
-        $unverifiedClinics = Clinic::where('is_verified', 0)
-            ->when($hasVerificationDenial, fn ($q) => $q->whereNull('verification_denied_at'))
-            ->count();
+        $unverifiedClinics = Clinic::where('is_verified', 0)->count();
         $totalPetOwners = PetOwner::count();
         $upcomingAppointments = Appointment::where('appointment_date', '>=', now())->count();
 
         // Pending clinics (unverified)
-        $clinics = Clinic::where('is_verified', 0)
-            ->when($hasVerificationDenial, fn ($q) => $q->whereNull('verification_denied_at'))
-            ->get();
+        $clinics = Clinic::where('is_verified', 0)->get();
 
         // ✅ Verified clinics (matches Blade variable)
         $verifiedClinicList = Clinic::where('is_verified', 1)->get();
@@ -151,71 +145,17 @@ class AdminController extends Controller
     /**
      * ✅ Verify a clinic
      */
-    public function verifyClinic(Request $request, $id)
+    public function verifyClinic($id)
     {
-        if ($request->string('action_type')->toString() === 'deny') {
-            return $this->denyClinic($request, $id);
-        }
-
         $clinic = Clinic::findOrFail($id);
         if (!$clinic->subscription_receipt) {
             return redirect()->back()->with('error', 'Clinic cannot be verified until subscription payment proof is uploaded.');
         }
 
         $clinic->is_verified = 1;
-        if (Schema::hasColumn('clinics', 'verification_denied_at')) {
-            $clinic->verification_denied_at = null;
-        }
-        if (Schema::hasColumn('clinics', 'verification_denied_reason')) {
-            $clinic->verification_denied_reason = null;
-        }
         $clinic->save();
 
         return redirect()->back()->with('success', 'Clinic verified successfully!');
-    }
-
-    public function denyClinic(Request $request, $id)
-    {
-        $request->validate([
-            'reason' => 'required|string|max:2000',
-        ]);
-
-        if (!Schema::hasColumn('clinics', 'verification_denied_at') || !Schema::hasColumn('clinics', 'verification_denied_reason')) {
-            return redirect()->back()->with('error', 'Deny verification is not available until database migrations are applied.');
-        }
-
-        $targetId = (int) $id;
-        if ($targetId <= 0) {
-            $targetId = (int) $request->input('clinic_id');
-        }
-        $clinic = Clinic::findOrFail($targetId);
-
-        if ((bool) $clinic->is_verified) {
-            return redirect()->back()->with('error', 'Verified clinics cannot be denied.');
-        }
-
-        if (!empty($clinic->documents)) {
-            foreach ((array) $clinic->documents as $doc) {
-                if (is_string($doc) && Storage::disk('public')->exists($doc)) {
-                    Storage::disk('public')->delete($doc);
-                }
-            }
-        }
-
-        if ($clinic->subscription_receipt && Storage::disk('public')->exists('clinics/subscription_receipts/' . $clinic->subscription_receipt)) {
-            Storage::disk('public')->delete('clinics/subscription_receipts/' . $clinic->subscription_receipt);
-        }
-
-        $clinic->documents = [];
-        $clinic->is_subscribed = false;
-        $clinic->subscription_receipt = null;
-        $clinic->subscription_started_at = null;
-        $clinic->subscription_expires_at = null;
-        $clinic->verification_denied_at = now();
-        $clinic->verification_denied_reason = $request->reason;
-        $clinic->save();
-
-        return redirect()->back()->with('success', 'Clinic verification denied.');
     }
 
     public function approveSubscription($id)

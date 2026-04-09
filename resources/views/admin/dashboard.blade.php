@@ -358,14 +358,6 @@
                                                                     Approve
                                                                 </button>
                                                             </form>
-                                                            <button type="button"
-                                                                    class="btn btn-danger btn-sm rounded-pill px-3 fw-semibold denyClinicBtn"
-                                                                    data-id="{{ $clinic->id }}"
-                                                                    data-name="{{ $clinic->clinic_name }}"
-                                                                    data-action="{{ \Illuminate\Support\Facades\Route::has('admin.clinics.deny') ? route('admin.clinics.deny', $clinic->id) : route('admin.clinics.verify', $clinic->id) }}"
-                                                                    onclick="event.stopPropagation()">
-                                                                Deny
-                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -672,33 +664,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="denyClinicModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
-      <div class="modal-header bg-danger text-white border-0">
-        <h5 class="modal-title fw-bold">Deny Verification</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form method="POST" action="{{ \Illuminate\Support\Facades\Route::has('admin.clinics.deny') ? route('admin.clinics.deny', 0) : route('admin.clinics.verify', 0) }}" id="denyClinicForm">
-        @csrf
-        <input type="hidden" name="action_type" value="deny">
-        <div class="modal-body p-4 bg-light-subtle">
-          <div class="mb-2 fw-bold text-dark">Clinic: <span id="denyClinicName">Clinic</span></div>
-          <input type="hidden" id="denyClinicId" name="clinic_id" value="">
-          <div class="mb-0">
-            <label class="form-label fw-bold text-secondary small text-uppercase">Reason</label>
-            <textarea class="form-control shadow-sm" id="denyReason" name="reason" rows="4" required placeholder="State the reason for denial..."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer border-0 bg-light-subtle pb-4 px-4">
-          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Deny & Remove Docs</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
 <style>
 /* Custom Tab Styles */
 .nav-link.active {
@@ -956,27 +921,6 @@ document.querySelectorAll('.viewClinicBtn').forEach(btn => {
                 document.getElementById('modalServicesContent').innerHTML = '<p class="text-danger text-center">Failed to load services.</p>';
                 document.getElementById('modalReviewsContent').innerHTML = '<p class="text-danger text-center">Failed to load reviews.</p>';
             });
-    });
-});
-
-const denyModalEl = document.getElementById('denyClinicModal');
-const denyClinicForm = document.getElementById('denyClinicForm');
-const denyClinicIdInput = document.getElementById('denyClinicId');
-const denyClinicNameEl = document.getElementById('denyClinicName');
-const denyReasonInput = document.getElementById('denyReason');
-const denyModal = denyModalEl ? new bootstrap.Modal(denyModalEl) : null;
-
-document.querySelectorAll('.denyClinicBtn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (!denyModal) return;
-        const clinicId = btn.dataset.id || '';
-        if (denyClinicIdInput) denyClinicIdInput.value = clinicId;
-        if (denyClinicNameEl) denyClinicNameEl.textContent = btn.dataset.name || 'Clinic';
-        if (denyReasonInput) denyReasonInput.value = '';
-        if (denyClinicForm) {
-            denyClinicForm.action = btn.dataset.action || denyClinicForm.action;
-        }
-        denyModal.show();
     });
 });
 
