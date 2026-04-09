@@ -358,12 +358,6 @@
                                                                     Approve
                                                                 </button>
                                                             </form>
-                                                            <button type="button"
-                                                                    class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold denyClinicBtn"
-                                                                    data-clinic-id="{{ $clinic->id }}"
-                                                                    data-clinic-name="{{ $clinic->clinic_name }}">
-                                                                Deny
-                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -700,30 +694,6 @@
     </div>
   </div>
 </div>
-
-<div class="modal fade" id="denyClinicModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-      <div class="modal-header bg-danger text-white border-0">
-        <h5 class="modal-title fw-bold"><i class="bi bi-x-octagon-fill me-2"></i>Deny Verification</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form method="POST" id="denyClinicForm">
-        @csrf
-        <div class="modal-body p-4 bg-light-subtle">
-          <div class="fw-bold text-dark mb-1" id="denyClinicName">Clinic</div>
-          <div class="text-muted small mb-3">State the reason for denial. This request will be removed.</div>
-          <label class="form-label fw-bold text-secondary small text-uppercase">Reason</label>
-          <textarea name="reason" class="form-control shadow-sm" rows="4" required placeholder="Write the reason here..."></textarea>
-        </div>
-        <div class="modal-footer border-0 bg-light-subtle pb-4 px-4">
-          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Deny & Remove</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 @endsection
 
 @section('scripts')
@@ -980,22 +950,5 @@ document.getElementById('backToClinicView').addEventListener('click', () => {
         docModalEl.removeEventListener('hidden.bs.modal', reopenClinicModal);
     });
 });
-
-const denyModalEl = document.getElementById('denyClinicModal');
-const denyForm = document.getElementById('denyClinicForm');
-const denyName = document.getElementById('denyClinicName');
-const denyModal = denyModalEl ? new bootstrap.Modal(denyModalEl) : null;
-
-document.querySelectorAll('.denyClinicBtn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const id = btn.dataset.clinicId;
-        const name = btn.dataset.clinicName;
-        if (denyName) denyName.textContent = name || 'Clinic';
-        if (denyForm && id) {
-            denyForm.action = "{{ url('admin/clinics') }}/" + id + "/deny";
-        }
-        denyModal?.show();
-    });
-});
-
 </script>
+@endsection
