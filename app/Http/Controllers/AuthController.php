@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Admin;
 use App\Models\Clinic;
+use App\Models\ClinicVerificationDenial;
 use App\Models\PetOwner;
 
 class AuthController extends Controller
@@ -76,6 +77,14 @@ class AuthController extends Controller
                 $guard = 'clinic';
                 $redirect = 'clinic.dashboard';
                 $credentials = $request->only('email', 'password');
+
+                $denial = ClinicVerificationDenial::where('email', $request->email)->latest('denied_at')->first();
+                if ($denial) {
+                    return redirect()->route('clinic.denied')->with([
+                        'clinic_denied_name' => $denial->clinic_name,
+                        'clinic_denied_reason' => $denial->reason,
+                    ]);
+                }
 
                 if (!Auth::guard($guard)->attempt($credentials)) {
                     $failedAttempts++;

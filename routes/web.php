@@ -61,6 +61,7 @@ Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
     Route::put('/password', [AdminController::class, 'updatePassword'])->name('admin.updatePassword');
 
     Route::post('/clinics/{id}/verify', [AdminController::class, 'verifyClinic'])->name('admin.clinics.verify');
+    Route::post('/clinics/{id}/deny', [AdminController::class, 'denyClinic'])->name('admin.clinics.deny');
     Route::post('/clinics/{id}/approve-subscription', [AdminController::class, 'approveSubscription'])->name('admin.clinics.approveSubscription');
     Route::post('/clinics/{id}/test-expiry', [AdminController::class, 'testSubscriptionExpiry'])->name('admin.clinics.testExpiry');
     Route::delete('/clinics/{id}/delete', [AdminController::class, 'deleteClinic'])->name('admin.clinics.delete');
@@ -91,6 +92,13 @@ Route::prefix('auth')->group(function () {
 // Logout
 // --------------------
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::get('/clinic/denied', function () {
+    return view('clinic.denied', [
+        'clinicName' => session('clinic_denied_name'),
+        'reason' => session('clinic_denied_reason'),
+    ]);
+})->name('clinic.denied');
 
 // --------------------
 // Pet Owner Routes

@@ -8,6 +8,7 @@ use App\Models\PetOwner;
 use App\Models\Appointment;
 use App\Models\ClinicBan;
 use App\Models\ClinicBanAppeal;
+use App\Models\ClinicVerificationDenial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -156,6 +157,38 @@ class AdminController extends Controller
         $clinic->save();
 
         return redirect()->back()->with('success', 'Clinic verified successfully!');
+    }
+
+    public function denyClinic(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:2000',
+        ]);
+
+        $clinic = Clinic::findOrFail($id);
+
+        ClinicVerificationDenial::create([
+            'clinic_name' => $clinic->clinic_name,
+            'email' => $clinic->email,
+            'reason' => $request->input('reason'),
+            'denied_at' => now(),
+        ]);
+
+        if (!empty($clinic->documents)) {
+            foreach ($clinic->documents as $doc) {
+                if (Storage::disk('public')->exists($doc)) {
+                    Storage::disk('public')->delete($doc);
+                }
+            }
+        }
+
+        if ($clinic->subscription_receipt && Storage::disk('public')->exists('subscription_receipts/' . $clinic->subscription_receipt)) {
+            Storage::disk('public')->delete('subscription_receipts/' . $clinic->subscription_receipt);
+        }
+
+        $clinic->delete();
+
+        return redirect()->back()->with('success', 'Clinic verification denied and request removed.');
     }
 
     public function approveSubscription($id)
