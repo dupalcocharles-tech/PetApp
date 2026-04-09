@@ -379,7 +379,7 @@
                                                         <h5 class="modal-title fw-bold"><i class="bi bi-x-octagon-fill me-2"></i>Deny Verification</h5>
                                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
-                                                    <form method="POST" action="{{ route('admin.clinics.deny', $clinic->id) }}">
+                                                    <form method="POST" action="{{ url('admin/clinics/' . $clinic->id . '/deny') }}">
                                                         @csrf
                                                         <div class="modal-body p-4 bg-light-subtle">
                                                             <div class="fw-bold text-dark mb-1">{{ $clinic->clinic_name }}</div>
