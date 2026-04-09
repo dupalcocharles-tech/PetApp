@@ -11,6 +11,7 @@ use App\Models\ClinicBanAppeal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
@@ -52,16 +53,21 @@ class AdminController extends Controller
     public function dashboard()
     {
         $admin = Auth::guard('admin')->user();
+        $hasVerificationDenial = Schema::hasColumn('clinics', 'verification_denied_at');
 
         // Quick stats
         $totalClinics = Clinic::count();
         $verifiedClinics = Clinic::where('is_verified', 1)->count();
-        $unverifiedClinics = Clinic::where('is_verified', 0)->whereNull('verification_denied_at')->count();
+        $unverifiedClinics = Clinic::where('is_verified', 0)
+            ->when($hasVerificationDenial, fn ($q) => $q->whereNull('verification_denied_at'))
+            ->count();
         $totalPetOwners = PetOwner::count();
         $upcomingAppointments = Appointment::where('appointment_date', '>=', now())->count();
 
         // Pending clinics (unverified)
-        $clinics = Clinic::where('is_verified', 0)->whereNull('verification_denied_at')->get();
+        $clinics = Clinic::where('is_verified', 0)
+            ->when($hasVerificationDenial, fn ($q) => $q->whereNull('verification_denied_at'))
+            ->get();
 
         // ✅ Verified clinics (matches Blade variable)
         $verifiedClinicList = Clinic::where('is_verified', 1)->get();
@@ -153,8 +159,12 @@ class AdminController extends Controller
         }
 
         $clinic->is_verified = 1;
-        $clinic->verification_denied_at = null;
-        $clinic->verification_denied_reason = null;
+        if (Schema::hasColumn('clinics', 'verification_denied_at')) {
+            $clinic->verification_denied_at = null;
+        }
+        if (Schema::hasColumn('clinics', 'verification_denied_reason')) {
+            $clinic->verification_denied_reason = null;
+        }
         $clinic->save();
 
         return redirect()->back()->with('success', 'Clinic verified successfully!');
@@ -165,6 +175,10 @@ class AdminController extends Controller
         $request->validate([
             'reason' => 'required|string|max:2000',
         ]);
+
+        if (!Schema::hasColumn('clinics', 'verification_denied_at') || !Schema::hasColumn('clinics', 'verification_denied_reason')) {
+            return redirect()->back()->with('error', 'Deny verification is not available until database migrations are applied.');
+        }
 
         $clinic = Clinic::findOrFail($id);
 
