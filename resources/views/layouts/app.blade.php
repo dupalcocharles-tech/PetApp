@@ -37,6 +37,23 @@
             margin-top: 0 !important;
             padding-top: 0 !important;
         }
+
+        .password-toggle-btn {
+            position: absolute;
+            top: 50%;
+            right: 0.75rem;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            padding: 0.25rem;
+            line-height: 1;
+            color: #6c757d;
+        }
+
+        .password-toggle-btn:focus {
+            outline: none;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
@@ -55,5 +72,46 @@
 
     {{-- Page-specific scripts --}}
     @yield('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordInputs = Array.from(document.querySelectorAll('input[type="password"]'))
+                .filter(input => !input.hasAttribute('data-no-password-toggle'));
+
+            passwordInputs.forEach(input => {
+                if (!input || input.dataset.passwordToggleReady === '1') return;
+                input.dataset.passwordToggleReady = '1';
+
+                let container = input.closest('.input-group') || input.parentElement;
+                if (!container) return;
+
+                if (container.querySelector(':scope > .password-toggle-btn')) return;
+
+                if (!container.classList.contains('position-relative')) {
+                    container.classList.add('position-relative');
+                }
+
+                const currentPaddingEnd = parseFloat(getComputedStyle(input).paddingRight || '0') || 0;
+                if (currentPaddingEnd < 44) {
+                    input.style.paddingRight = '2.75rem';
+                }
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'password-toggle-btn';
+                btn.setAttribute('aria-label', 'Show password');
+                btn.innerHTML = '<i class="bi bi-eye"></i>';
+
+                btn.addEventListener('click', () => {
+                    const isHidden = input.type === 'password';
+                    input.type = isHidden ? 'text' : 'password';
+                    btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+                    btn.innerHTML = isHidden ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+                });
+
+                container.appendChild(btn);
+            });
+        });
+    </script>
 </body>
 </html>

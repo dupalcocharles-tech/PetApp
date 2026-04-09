@@ -93,8 +93,13 @@ class AuthController extends Controller
                 $request->session()->forget($failedAttemptsKey);
 
                 $clinicUser = Auth::guard($guard)->user();
+                if ($clinicUser->verification_denied_at) {
+                    $request->session()->regenerate();
+                    return redirect()->route('clinic.denied');
+                }
+
                 if (!$clinicUser->is_verified) {
-                    Auth::guard($guard)->logout();
+                    $request->session()->regenerate();
                     return redirect()->route('clinic.waiting')
                         ->with('message', 'Your clinic is still waiting for admin verification.');
                 }

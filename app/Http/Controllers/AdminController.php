@@ -56,12 +56,12 @@ class AdminController extends Controller
         // Quick stats
         $totalClinics = Clinic::count();
         $verifiedClinics = Clinic::where('is_verified', 1)->count();
-        $unverifiedClinics = Clinic::where('is_verified', 0)->count();
+        $unverifiedClinics = Clinic::where('is_verified', 0)->whereNull('verification_denied_at')->count();
         $totalPetOwners = PetOwner::count();
         $upcomingAppointments = Appointment::where('appointment_date', '>=', now())->count();
 
         // Pending clinics (unverified)
-        $clinics = Clinic::where('is_verified', 0)->get();
+        $clinics = Clinic::where('is_verified', 0)->whereNull('verification_denied_at')->get();
 
         // ✅ Verified clinics (matches Blade variable)
         $verifiedClinicList = Clinic::where('is_verified', 1)->get();
@@ -153,9 +153,47 @@ class AdminController extends Controller
         }
 
         $clinic->is_verified = 1;
+        $clinic->verification_denied_at = null;
+        $clinic->verification_denied_reason = null;
         $clinic->save();
 
         return redirect()->back()->with('success', 'Clinic verified successfully!');
+    }
+
+    public function denyClinic(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:2000',
+        ]);
+
+        $clinic = Clinic::findOrFail($id);
+
+        if ((bool) $clinic->is_verified) {
+            return redirect()->back()->with('error', 'Verified clinics cannot be denied.');
+        }
+
+        if (!empty($clinic->documents)) {
+            foreach ((array) $clinic->documents as $doc) {
+                if (is_string($doc) && Storage::disk('public')->exists($doc)) {
+                    Storage::disk('public')->delete($doc);
+                }
+            }
+        }
+
+        if ($clinic->subscription_receipt && Storage::disk('public')->exists('clinics/subscription_receipts/' . $clinic->subscription_receipt)) {
+            Storage::disk('public')->delete('clinics/subscription_receipts/' . $clinic->subscription_receipt);
+        }
+
+        $clinic->documents = [];
+        $clinic->is_subscribed = false;
+        $clinic->subscription_receipt = null;
+        $clinic->subscription_started_at = null;
+        $clinic->subscription_expires_at = null;
+        $clinic->verification_denied_at = now();
+        $clinic->verification_denied_reason = $request->reason;
+        $clinic->save();
+
+        return redirect()->back()->with('success', 'Clinic verification denied.');
     }
 
     public function approveSubscription($id)

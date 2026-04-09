@@ -39,6 +39,8 @@ class Clinic extends Authenticatable
         'subscription_receipt',
         'subscription_started_at',
         'subscription_expires_at',
+        'verification_denied_at',
+        'verification_denied_reason',
     ];
 
     protected $hidden = [
@@ -54,6 +56,7 @@ class Clinic extends Authenticatable
         'gallery' => 'array',
         'subscription_started_at' => 'datetime',
         'subscription_expires_at' => 'datetime',
+        'verification_denied_at' => 'datetime',
     ];
 
     public function isVerified()

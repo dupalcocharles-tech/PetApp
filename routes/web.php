@@ -61,6 +61,7 @@ Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
     Route::put('/password', [AdminController::class, 'updatePassword'])->name('admin.updatePassword');
 
     Route::post('/clinics/{id}/verify', [AdminController::class, 'verifyClinic'])->name('admin.clinics.verify');
+    Route::post('/clinics/{id}/deny', [AdminController::class, 'denyClinic'])->name('admin.clinics.deny');
     Route::post('/clinics/{id}/approve-subscription', [AdminController::class, 'approveSubscription'])->name('admin.clinics.approveSubscription');
     Route::post('/clinics/{id}/test-expiry', [AdminController::class, 'testSubscriptionExpiry'])->name('admin.clinics.testExpiry');
     Route::delete('/clinics/{id}/delete', [AdminController::class, 'deleteClinic'])->name('admin.clinics.delete');
@@ -137,7 +138,7 @@ Route::middleware(['auth:pet_owner'])->group(function () {
 // --------------------
 // Clinic Routes
 // --------------------
-Route::middleware(['auth:clinic', \App\Http\Middleware\CheckClinicBan::class])->group(function () {
+Route::middleware(['auth:clinic', \App\Http\Middleware\CheckClinicBan::class, \App\Http\Middleware\CheckClinicDenied::class])->group(function () {
 // --------------------
 // Clinic Staff Routes (USES SAME clinic GUARD)
 // --------------------
@@ -161,12 +162,21 @@ Route::put('/staff/availability', [App\Http\Controllers\ClinicStaffController::c
             return redirect()->route('clinic.subscription');
         }
 
+        if ($clinic->verification_denied_at) {
+            return redirect()->route('clinic.denied');
+        }
+
         if ($clinic->is_verified) {
             return redirect()->route('clinic.dashboard');
         }
 
         return view('clinic.waiting');
     })->name('clinic.waiting');
+
+    Route::get('/clinic/denied', function () {
+        $clinic = Auth::guard('clinic')->user();
+        return view('clinic.denied', compact('clinic'));
+    })->name('clinic.denied');
 
     Route::get('/clinic/subscription', [ClinicController::class, 'subscription'])->name('clinic.subscription');
     Route::post('/clinic/subscription', [ClinicController::class, 'submitSubscription'])->name('clinic.subscription.submit');
