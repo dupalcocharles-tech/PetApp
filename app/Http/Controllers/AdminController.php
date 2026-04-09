@@ -184,7 +184,11 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Deny verification is not available until database migrations are applied.');
         }
 
-        $clinic = Clinic::findOrFail($id);
+        $targetId = (int) $id;
+        if ($targetId <= 0) {
+            $targetId = (int) $request->input('clinic_id');
+        }
+        $clinic = Clinic::findOrFail($targetId);
 
         if ((bool) $clinic->is_verified) {
             return redirect()->back()->with('error', 'Verified clinics cannot be denied.');
