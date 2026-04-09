@@ -362,7 +362,7 @@
                                                                     class="btn btn-danger btn-sm rounded-pill px-3 fw-semibold denyClinicBtn"
                                                                     data-id="{{ $clinic->id }}"
                                                                     data-name="{{ $clinic->clinic_name }}"
-                                                                    data-action="{{ \Illuminate\Support\Facades\Route::has('admin.clinics.deny') ? route('admin.clinics.deny', $clinic->id) : url('admin/clinics/' . $clinic->id . '/deny') }}"
+                                                                    data-action="{{ \Illuminate\Support\Facades\Route::has('admin.clinics.deny') ? route('admin.clinics.deny', $clinic->id) : route('admin.clinics.verify', $clinic->id) }}"
                                                                     onclick="event.stopPropagation()">
                                                                 Deny
                                                             </button>
@@ -679,8 +679,9 @@
         <h5 class="modal-title fw-bold">Deny Verification</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="POST" action="{{ \Illuminate\Support\Facades\Route::has('admin.clinics.deny') ? route('admin.clinics.deny', 0) : url('admin/clinics/0/deny') }}" id="denyClinicForm">
+      <form method="POST" action="{{ \Illuminate\Support\Facades\Route::has('admin.clinics.deny') ? route('admin.clinics.deny', 0) : route('admin.clinics.verify', 0) }}" id="denyClinicForm">
         @csrf
+        <input type="hidden" name="action_type" value="deny">
         <div class="modal-body p-4 bg-light-subtle">
           <div class="mb-2 fw-bold text-dark">Clinic: <span id="denyClinicName">Clinic</span></div>
           <input type="hidden" id="denyClinicId" name="clinic_id" value="">

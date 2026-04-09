@@ -151,8 +151,12 @@ class AdminController extends Controller
     /**
      * ✅ Verify a clinic
      */
-    public function verifyClinic($id)
+    public function verifyClinic(Request $request, $id)
     {
+        if ($request->string('action_type')->toString() === 'deny') {
+            return $this->denyClinic($request, $id);
+        }
+
         $clinic = Clinic::findOrFail($id);
         if (!$clinic->subscription_receipt) {
             return redirect()->back()->with('error', 'Clinic cannot be verified until subscription payment proof is uploaded.');
