@@ -1343,6 +1343,21 @@
   </div>
 </div>
 
+<div class="modal fade" id="serviceImagesModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+      <div class="modal-header bg-dark text-white border-0">
+        <h5 class="modal-title fw-bold" id="serviceImagesModalTitle">Service Images</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 bg-light-subtle" id="serviceImagesModalBody"></div>
+      <div class="modal-footer border-0 bg-light-subtle">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {{-- Booking Modal --}}
 <div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -3951,10 +3966,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const clinicDetailsModal = clinicDetailsModalEl ? new bootstrap.Modal(clinicDetailsModalEl) : null;
     const clinicDetailsModalTitle = document.getElementById('clinicDetailsModalTitle');
     const clinicDetailsModalBody = document.getElementById('clinicDetailsModalBody');
+    const serviceImagesModalEl = document.getElementById('serviceImagesModal');
+    const serviceImagesModal = serviceImagesModalEl ? new bootstrap.Modal(serviceImagesModalEl) : null;
+    const serviceImagesModalTitle = document.getElementById('serviceImagesModalTitle');
+    const serviceImagesModalBody = document.getElementById('serviceImagesModalBody');
     const bookModalEl = document.getElementById('bookModal');
     const bookModal = bookModalEl ? new bootstrap.Modal(bookModalEl) : null;
     const modalClinicId = document.getElementById('modalClinicId');
     let reopenClinicsModalAfterDetails = false;
+
+    const openServiceImagesModal = (images, title) => {
+        if (!serviceImagesModal || !serviceImagesModalTitle || !serviceImagesModalBody) return;
+        const list = Array.isArray(images) ? images.filter(Boolean) : [];
+        serviceImagesModalTitle.textContent = title || 'Service Images';
+        if (list.length === 0) {
+            serviceImagesModalBody.innerHTML = `<div class="text-muted text-center">No images available.</div>`;
+            serviceImagesModal.show();
+            return;
+        }
+        if (list.length === 1) {
+            serviceImagesModalBody.innerHTML = `
+                <div class="text-center">
+                    <a href="${list[0]}" target="_blank" class="d-inline-block text-decoration-none">
+                        <img src="${list[0]}" class="img-fluid rounded-4 border shadow-sm" style="max-height: 520px;">
+                    </a>
+                    <div class="small text-muted mt-2">Tap the image to open in a new tab.</div>
+                </div>
+            `;
+        } else {
+            serviceImagesModalBody.innerHTML = `
+                <div class="row g-3">
+                    ${list.map(url => `
+                        <div class="col-6 col-md-4">
+                            <a href="${url}" target="_blank" class="d-block">
+                                <img src="${url}" class="w-100 rounded-4 border shadow-sm object-fit-cover" style="height: 140px;">
+                            </a>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="small text-muted mt-3 text-center">Tap any image to open in a new tab.</div>
+            `;
+        }
+        serviceImagesModal.show();
+    };
 
     const openClinicDetailsModal = (clinic) => {
         if (!clinicDetailsModal || !clinicDetailsModalTitle || !clinicDetailsModalBody) return;
@@ -4200,8 +4254,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                                                 </div>
                                                             ` : ''}
                                                         </div>
-                                                        <div class="fw-bold text-success fs-5">
-                                                            ${s.price ? `₱${parseFloat(s.price).toFixed(2)}` : ''}
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <div class="fw-bold text-success fs-5">
+                                                                ${s.price ? `₱${parseFloat(s.price).toFixed(2)}` : ''}
+                                                            </div>
+                                                            ${(Array.isArray(s.images) && s.images.length) ? `
+                                                                <button type="button"
+                                                                    class="btn p-0 border-0 bg-transparent service-images-trigger"
+                                                                    data-title="${(s.name ?? s.service_name ?? 'Service').toString().replaceAll('"', '&quot;')}"
+                                                                    data-images="${encodeURIComponent(JSON.stringify(s.images))}"
+                                                                    style="position: relative;">
+                                                                    <img src="${s.images[0]}" alt="Service Image" class="rounded-3 border shadow-sm object-fit-cover" style="width: 38px; height: 38px;">
+                                                                    ${s.images.length > 1 ? `<span class="badge bg-dark text-white rounded-pill" style="position:absolute; top:-8px; right:-8px; font-size:0.65rem;">+${s.images.length - 1}</span>` : ''}
+                                                                </button>
+                                                            ` : ''}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -4262,6 +4328,20 @@ if (serviceIdInput) {
     serviceIdInput.value = this.dataset.id; // store the selected service ID
 }
 
+                        });
+                    });
+
+                    card.querySelectorAll('.service-images-trigger').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            let images = [];
+                            try {
+                                images = JSON.parse(decodeURIComponent(btn.dataset.images || '[]'));
+                            } catch (_) {
+                                images = [];
+                            }
+                            openServiceImagesModal(images, btn.dataset.title || 'Service Images');
                         });
                     });
 
