@@ -78,12 +78,14 @@ class AuthController extends Controller
                 $redirect = 'clinic.dashboard';
                 $credentials = $request->only('email', 'password');
 
-                $denial = ClinicVerificationDenial::where('email', $request->email)->latest('denied_at')->first();
-                if ($denial) {
-                    return redirect()->route('clinic.denied')->with([
-                        'clinic_denied_name' => $denial->clinic_name,
-                        'clinic_denied_reason' => $denial->reason,
-                    ]);
+                if (class_exists(\App\Models\ClinicVerificationDenial::class)) {
+                    $denial = \App\Models\ClinicVerificationDenial::where('email', $request->email)->latest('denied_at')->first();
+                    if ($denial) {
+                        return redirect()->route('clinic.denied')->with([
+                            'clinic_denied_name' => $denial->clinic_name,
+                            'clinic_denied_reason' => $denial->reason,
+                        ]);
+                    }
                 }
 
                 if (!Auth::guard($guard)->attempt($credentials)) {
