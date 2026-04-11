@@ -3609,20 +3609,44 @@ window.openBookingModal = function(clinicId, serviceId) {
             if (searchModal) searchModal.hide();
         }
 
+        const normalizeAnimalName = (value) => {
+            const raw = (value || '').toString().trim().toLowerCase();
+            if (!raw) return '';
+            const compact = raw.replace(/[_\s-]+/g, '');
+            const irregular = {
+                mice: 'mouse',
+                geese: 'goose'
+            };
+            if (irregular[compact]) return irregular[compact];
+            if (compact.endsWith('ies')) return compact.slice(0, -3) + 'y';
+            if (compact.endsWith('ses')) return compact.slice(0, -2);
+            if (compact.endsWith('s') && compact.length > 3) return compact.slice(0, -1);
+            return compact;
+        };
+
         const petCheckboxes = bookModalEl.querySelectorAll('.pet-checkbox');
+        const activeAnimalBtn = document.querySelector('.animal-btn.active');
+        const selectedAnimalName = normalizeAnimalName(activeAnimalBtn ? activeAnimalBtn.dataset.animal : '');
         petCheckboxes.forEach(chk => {
             const wrapper = chk.closest('.form-check');
             if(wrapper) wrapper.style.display = '';
             chk.disabled = false;
         });
         
-        if(targetService && targetService.animals && targetService.animals.length > 0) {
-            const allowedAnimals = targetService.animals.map(a => a.toLowerCase().trim());
-             petCheckboxes.forEach(chk => {
-                const petSpecies = (chk.dataset.species || '').trim().toLowerCase();
-                const match = allowedAnimals.some(allowed => 
-                    petSpecies.includes(allowed) || allowed.includes(petSpecies)
+        if ((targetService && targetService.animals && targetService.animals.length > 0) || selectedAnimalName) {
+            const allowedAnimals = (targetService && Array.isArray(targetService.animals) ? targetService.animals : [])
+                .map(a => normalizeAnimalName(a))
+                .filter(Boolean);
+            petCheckboxes.forEach(chk => {
+                const petSpecies = normalizeAnimalName(chk.dataset.species || '');
+                const matchesService = !allowedAnimals.length || allowedAnimals.some(allowed =>
+                    petSpecies === allowed || petSpecies.includes(allowed) || allowed.includes(petSpecies)
                 );
+                const matchesSelectedAnimal = !selectedAnimalName ||
+                    petSpecies === selectedAnimalName ||
+                    petSpecies.includes(selectedAnimalName) ||
+                    selectedAnimalName.includes(petSpecies);
+                const match = matchesService && matchesSelectedAnimal;
                 
                 const wrapper = chk.closest('.form-check');
                 if (match) {
@@ -3974,6 +3998,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookModal = bookModalEl ? new bootstrap.Modal(bookModalEl) : null;
     const modalClinicId = document.getElementById('modalClinicId');
     let reopenClinicsModalAfterDetails = false;
+
+    const normalizeAnimalName = (value) => {
+        const raw = (value || '').toString().trim().toLowerCase();
+        if (!raw) return '';
+        const compact = raw.replace(/[_\s-]+/g, '');
+        const irregular = {
+            mice: 'mouse',
+            geese: 'goose'
+        };
+        if (irregular[compact]) return irregular[compact];
+        if (compact.endsWith('ies')) return compact.slice(0, -3) + 'y';
+        if (compact.endsWith('ses')) return compact.slice(0, -2);
+        if (compact.endsWith('s') && compact.length > 3) return compact.slice(0, -1);
+        return compact;
+    };
 
     const openServiceImagesModal = (images, title) => {
         if (!serviceImagesModal || !serviceImagesModalTitle || !serviceImagesModalBody) return;
