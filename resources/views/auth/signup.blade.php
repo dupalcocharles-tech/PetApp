@@ -138,7 +138,7 @@
                                             <input type="text" name="address" class="form-control bg-light border-0 rounded-4 px-3 py-2" required>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label text-secondary small fw-bold text-uppercase">Phone <small class="text-muted fw-normal text-lowercase">(optional)</small></label>
+                                            <label class="form-label text-secondary small fw-bold text-uppercase">Phone <small class="text-muted fw-normal text-lowercase"></small></label>
                                             <input type="text" name="phone" class="form-control bg-light border-0 rounded-4 px-3 py-2">
                                         </div>
                                     </div>
@@ -153,7 +153,7 @@
                                 {{-- PET OWNER FIELDS --}}
                                 @if($role === 'pet_owner')
                                     <div class="mb-3">
-                                        <label class="form-label text-secondary small fw-bold text-uppercase">Full Name <small class="text-muted fw-normal text-lowercase">(optional)</small></label>
+                                        <label class="form-label text-secondary small fw-bold text-uppercase">Full Name <small class="text-muted fw-normal text-lowercase"></small></label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0 rounded-start-4 ps-3"><i class="bi bi-person text-muted"></i></span>
                                             <input type="text" name="full_name" class="form-control bg-light border-0 rounded-end-4">
